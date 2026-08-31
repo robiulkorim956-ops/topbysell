@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টপ বাই সেল - Top Buy Sell</title>
+    <style>
+        /* বেসিক স্টাইল */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fa; color: #333; padding-bottom: 60px; }
+        a { text-decoration: none; color: inherit; cursor: pointer; }
+
+        .container { width: 92%; max-width: 1200px; margin: 0 auto; }
+
+        /* অ্যাডমিন নোটিশ */
+        .admin-notice { background-color: #f1f1f1; font-size: 13px; padding: 5px 10px; border-bottom: 1px solid #ddd; display: flex; overflow: hidden; white-space: nowrap; }
+        .notice-text { display: inline-block; animation: scrollLeft 20s linear infinite; }
+        @keyframes scrollLeft { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+        /* হেডার (Sticky করা হয়েছে যাতে স্ক্রল করলে ওপরে থাকে) */
+        .sticky-header-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; background: #fff; }
+        .logo { font-size: 20px; font-weight: bold; color: #2ecc71; cursor: pointer; display: flex; align-items: center; height: 40px; transition: transform 0.3s ease; }
+        .logo:hover { transform: scale(1.05); }
+        .logo img { max-height: 100%; object-fit: contain; transition: transform 0.3s ease; }
+        
+        .search-bar { width: 45%; position: relative; display: flex; align-items: center; border: 2px solid #2ecc71; border-radius: 25px; overflow: hidden; background: #fff; }
+        .search-bar input { width: 100%; padding: 8px 12px; border: none; outline: none; font-size: 14px; }
+        .search-btn-custom { background: #2ecc71; color: white; border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 0 23px 23px 0; }
+        
+        .header-icons { display: flex; gap: 12px; align-items: center; font-weight: 500; font-size: 13px;}
+        
+        .admin-btn, .btn-primary { background: #2ecc71; color: white; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s;}
+        .admin-btn { background: #e74c3c; } .admin-btn:hover { background: #c0392b; }
+        .btn-primary:hover { background: #27ae60; }
+
+        /* ব্যানার স্লাইডার */
+        .banner-slider { width: 100%; margin: 15px 0; height: 180px; border-radius: 10px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #00796b; font-weight: bold; background: #e0f7fa; border: 2px dashed #00acc1; }
+        @media(min-width: 768px) { .banner-slider { height: 300px; } }
+        .banner-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .banner-slide.active { opacity: 1; }
+
+        /* Custom Ad Space Container */
+        #customAdsWrapper {
+            width: 100%;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-header { width: 100%; margin: 25px 0 12px; display: flex; justify-content: space-between; align-items: center; }
+        .section-header h2 { font-size: 18px; color: #333; display: flex; align-items: center; gap: 10px; }
+        
+        .view-all-btn { font-size: 13px; color: #333; cursor: pointer; border: 1px solid #333; padding: 4px 12px; border-radius: 4px; font-weight: bold; transition: 0.3s; }
+        .view-all-btn:hover { border-color: #2ecc71; color: #2ecc71; }
+
+        /* হোম ক্যাটাগরি */
+        .categories { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .category-card { background: #fff; padding: 12px 8px; border-radius: 8px; text-align: center; border: 1px solid #e0e0e0; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .category-card:hover { border-color: #2ecc71; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .category-icon { width: 38px; height: 38px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f4f4f4; overflow: hidden;}
+        .category-icon img { width: 100%; height: 100%; object-fit: contain; padding: 4px;}
+        .category-title { font-size: 12px; font-weight: 500; }
+
+        @media(min-width: 768px) {
+            .categories { display: flex; overflow-x: auto; }
+            .category-card { flex: 1; min-width: 120px; }
+        }
+
+        /* সাইডবার ক্যাটাগরি পেজ */
+        #category-view { display: none; margin-top: 20px; }
+        .cat-page-wrapper { display: flex; flex-direction: column; gap: 20px; }
+        @media(min-width: 768px) { .cat-page-wrapper { flex-direction: row; } }
+        .sidebar { width: 100%; background: #fff; border-radius: 8px; border: 1px solid #eee; overflow: hidden; }
+        @media(min-width: 768px) { .sidebar { width: 25%; } }
+        .sidebar-header { background: #2ecc71; color: white; padding: 15px; font-size: 16px; font-weight: bold; }
+        .sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .sidebar-item.active { background: #e8f8f5; border-left: 4px solid #2ecc71; }
+        .sidebar-item-content { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px;}
+        .sidebar-item-icon { width: 25px; height: 25px; border-radius: 50%; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;}
+        .sidebar-item-icon img { width: 100%; height: 100%; object-fit: contain; padding: 2px;}
+        .clear-filter-btn { width: 100%; padding: 10px; margin-top: 15px; background: white; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-weight: bold; color: #555; }
+        .main-content { width: 100%; } @media(min-width: 768px) { .main-content { width: 75%; } }
+
+        /* প্রোডাক্ট গ্রিড */
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
+        #homeProductGrid { grid-template-columns: repeat(2, 1fr); }
+        @media(min-width: 768px) {
+            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 15px; }
+            #homeProductGrid { grid-template-columns: repeat(5, 1fr); }
+        }
+        .product-card { background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 8px; text-align: center; position: relative; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+        .product-card:hover { transform: scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,0.12); z-index: 10; }
+        .discount-badge { position: absolute; top: 8px; left: 8px; background: #2ecc71; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .stock-badge { position: absolute; top: 8px; right: 8px; background: #3498db; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+
+        .product-img { width: 70px; height: 70px; background: #f4f4f4; border-radius: 50%; margin: 12px auto; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #888; font-size: 12px; overflow: hidden; border: 1px solid #eee; }
+        .product-img img { width: 100%; height: 100%; object-fit: contain; padding: 8px;}
+        .price { margin: 8px 0; font-weight: bold; color: #333; font-size: 14px; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 12px; margin-left: 4px; }
+        .btn-buy, .btn-cart { width: 100%; padding: 7px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 4px; font-size: 13px; }
+        .btn-buy { background: #2ecc71; color: white; border: none; }
+        .btn-cart { background: white; color: #2ecc71; border: 1px solid #2ecc71; }
+        .timer { display: flex; gap: 3px; font-size: 12px; } .time-box { background: #e8f5e9; color: #2ecc71; padding: 3px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #e8f5e9;}
+
+        /* রিসেন্ট অর্ডার টেবিল */
+        .recent-orders-container { width: 100%; margin: 30px 0 20px; background: #fff; border-radius: 8px; border: 1px solid #eee; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow-x: auto; }
+        .recent-orders-title { text-align: center; font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+        .recent-orders-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .recent-orders-table th { background: #fff; color: #7f8c8d; font-weight: 600; font-size: 13px; border-bottom: 2px solid #eee; padding: 10px; text-align: left; }
+        .recent-orders-table td { padding: 12px 10px; border-bottom: 1px solid #f1f1f1; font-size: 13px; color: #333; }
+        .status-pill-pending { background: #fef3c7; color: #d97706; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; display: inline-block; }
+
+        /* ফুটার */
+        .footer-section { width: 100%; background: #fff; padding: 25px 0; border-top: 1px solid #eee; margin-top: 30px; }
+        .footer-flex { display: flex; flex-direction: column; gap: 20px; }
+        @media(min-width: 768px) { .footer-flex { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .support-box h4 { font-size: 15px; margin-bottom: 8px; color: #222; }
+        .support-btns { display: flex; gap: 10px; }
+        .btn-support-group, .btn-support-tg { background: #2ecc71; color: white; padding: 7px 14px; border-radius: 5px; border: none; font-weight: bold; font-size: 13px; }
+        .payment-accept-box { text-align: left; } @media(min-width: 768px) { .payment-accept-box { text-align: right; } }
+        .payment-accept-box h4 { font-size: 15px; margin-bottom: 8px; color: #222; }
+        .payment-icons { display: flex; gap: 10px; align-items: center; justify-content: flex-start; } @media(min-width: 768px) { .payment-icons { justify-content: flex-end; } }
+        .payment-icons img { height: 24px; max-width: 50px; object-fit: contain; }
+
+        .footer-green-bar { width: 100%; background: #2ecc71; color: white; text-align: center; padding: 20px 0; margin-top: 15px; }
+        .footer-green-bar h3 { font-size: 16px; margin-bottom: 8px; }
+        .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; font-size: 12px; margin-bottom: 6px; }
+        .footer-copy { font-size: 11px; opacity: 0.9; }
+
+        /* টেবিল */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; color: #333;}
+        table, th, td { border: 1px solid #ddd; } th, td { padding: 10px; text-align: left; font-size: 13px; } th { background-color: #2ecc71; color: white; }
+        .badge-pending { background: #f39c12; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
+        .badge-delivered { background: #2ecc71; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; margin-left: 4px;}
+        .btn-edit { background: #f39c12; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
+
+        /* স্টাইলিশ সেভ বাটন */
+        .admin-btn-save { background: #2ecc71; color: white; border: none; padding: 10px 18px; font-size: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2); }
+        .admin-btn-save:hover { background: #27ae60; box-shadow: 0 6px 8px rgba(39, 174, 96, 0.3); }
+
+        /* মোডাল (Popups) */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: #fff; padding: 25px; width: 100%; max-width: 420px; border-radius: 10px; position: relative; color: #333; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #888; }
+        
+        #loginModal .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            padding: 30px 25px;
+            text-align: center;
+            border-top: 5px solid #2ecc71;
+            animation: modalPopIn 0.3s ease-out;
+        }
+        @keyframes modalPopIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #loginModal h2 { color: #2c3e50; font-size: 22px; font-weight: 700; margin-bottom: 5px; }
+        #loginModal p.modal-subtext { color: #7f8c8d; font-size: 12px; margin-bottom: 20px; }
+        
+        .auth-tabs { display: flex; background: #f1f2f6; border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+        .auth-tab { flex: 1; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: 0.3s; color: #555; }
+        .auth-tab.active { background: #2ecc71; color: white; box-shadow: 0 2px 6px rgba(46,204,113,0.3); }
+
+        #loginModal .form-group { text-align: left; margin-bottom: 15px; }
+        #loginModal .form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+        #loginModal input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 13px; outline: none; transition: 0.3s; background: #fafafa; }
+        #loginModal input:focus { border-color: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,0.15); background: #fff; }
+        #loginModal .admin-btn-save { width: 100%; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #2ecc71; cursor: pointer; border: none; color: white; transition: 0.3s; margin-top: 10px; }
+        #loginModal .admin-btn-save:hover { background: #27ae60; }
+        #loginModal .close-modal { top: 12px; right: 18px; font-size: 20px; color: #aaa; }
+
+        .success-modal .modal-content { text-align: center; border-top: 5px solid #2ecc71; animation: popIn 0.3s ease-out;}
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .success-icon { font-size: 45px; color: #2ecc71; margin-bottom: 8px; }
+        .dark-modal { background: #2c3e50; color: white; border: 2px solid #2ecc71;} .dark-modal .close-modal { color: white; }
+
+        /* PDP Page CSS */
+        #product-details-view { display: none; margin-top: 30px; margin-bottom: 50px; }
+        .pdp-main-layout { display: flex; flex-direction: column; gap: 30px; }
+        @media(min-width: 992px) { .pdp-main-layout { flex-direction: row; align-items: flex-start; } }
+        
+        .pdp-center-col { flex: 1; display: flex; flex-direction: column; gap: 25px; }
+        .pdp-top-card { display: flex; flex-direction: column; background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 25px; gap: 30px; }
+        @media(min-width: 768px) { .pdp-top-card { flex-direction: row; } }
+
+        .pdp-img-box { flex: 1.1; background: #fff; border: 1px solid #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 320px; position: relative; padding: 20px; overflow: hidden; cursor: crosshair; }
+        .pdp-img-box img { max-width: 100%; max-height: 250px; object-fit: contain; transition: transform 0.1s ease-out; transform-origin: center center; }
+
+        .pdp-info-box { flex: 1.3; display: flex; flex-direction: column; justify-content: flex-start; }
+        .pdp-title { font-size: 24px; font-weight: bold; color: #111; margin-bottom: 8px; }
+        
+        .pdp-price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+        .pdp-price { font-size: 28px; font-weight: bold; color: #2ecc71; }
+        .pdp-old-price { font-size: 16px; color: #999; text-decoration: line-through; }
+        .pdp-save-badge { color: #2ecc71; font-size: 12px; font-weight: bold; background: #e8f8f5; padding: 2px 6px; border-radius: 4px; }
+
+        .pdp-opt-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
+        .pdp-options-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .pdp-opt-pill { border: 1px solid #ddd; padding: 8px 14px; border-radius: 6px; font-size: 13px; color: #555; cursor: pointer; transition: 0.2s; }
+        .pdp-opt-pill.active { border-color: #2ecc71; color: #2ecc71; font-weight: bold; background: #f0fdf4; }
+
+        .pdp-action-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .pdp-qty-group { display: flex; border: 1px solid #2ecc71; border-radius: 6px; overflow: hidden; height: 42px; width: 110px; }
+        .pdp-qty-group button { flex: 1; border: none; background: #fff; color: #2ecc71; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .pdp-qty-group input { width: 38px; text-align: center; border: none; border-left: 1px solid #2ecc71; border-right: 1px solid #2ecc71; font-weight: bold; font-size: 14px; outline: none; }
+        
+        .pdp-cart-btn { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; }
+        .pdp-buy-btn { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; }
+        .pdp-cart-btn:hover, .pdp-buy-btn:hover { background: #27ae60; }
+
+        .pdp-meta-info { font-size: 13px; color: #666; border-top: 1px solid #eee; padding-top: 12px; line-height: 1.6; }
+
+        .pdp-desc-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 25px; }
+        .pdp-desc-tabs { display: flex; gap: 20px; border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .pdp-tab-item { padding-bottom: 8px; font-weight: bold; font-size: 14px; color: #2ecc71; border-bottom: 2px solid #2ecc71; cursor: pointer; margin-bottom: -2px; }
+        .pdp-tab-item.inactive { color: #777; border-bottom: none; }
+
+        .pdp-right-col { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+        @media(min-width: 992px) { .pdp-right-col { width: 280px; flex-shrink: 0; } }
+
+        .pdp-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; }
+        .pdp-box-title { font-size: 16px; font-weight: bold; color: #222; margin-bottom: 12px; border-bottom: 2px solid #2ecc71; padding-bottom: 6px; }
+        
+        .related-prod-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #eee; cursor: pointer; }
+        .related-prod-item img { width: 35px; height: 35px; object-fit: contain; }
+        .related-info h5 { font-size: 13px; color: #333; margin-bottom: 2px; }
+        .related-info .rel-price { font-size: 12px; color: #2ecc71; font-weight: bold; }
+
+        .pdp-cat-link { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f4f4f4; font-size: 13px; font-weight: 500; cursor: pointer; }
+        .pdp-cat-link img { width: 20px; height: 20px; object-fit: contain; }
+
+        /* Checkout Page CSS */
+        #checkout-view { display: none; margin-top: 20px; margin-bottom: 40px; }
+        .checkout-grid { display: flex; flex-direction: column; gap: 20px; }
+        @media(min-width: 768px) { .checkout-grid { flex-direction: row; gap: 30px; align-items: flex-start; } }
+        .chk-left { flex: 2; position: relative; }
+        .chk-right { flex: 1; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
+        .chk-section-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .chk-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+        @media(min-width: 768px) { .chk-row { flex-direction: row; } }
+        .chk-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; outline: none; }
+        .chk-input:focus { border-color: #2ecc71; }
+        
+        .payment-methods { display: flex; gap: 12px; margin-bottom: 15px; }
+        .pay-card { flex: 1; border: 1px solid #ddd; padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; background: #fff; font-size: 13px; }
+        .pay-card img { height: 30px; margin-bottom: 8px; object-fit: contain;}
+        .pay-card.active { border-color: #2ecc71; background: #f0fdf4; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.15); }
+        .pay-card.active::after { content: '✔'; color: #2ecc71; font-weight: bold; display: block; }
+        .pay-instructions { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #7f8c8d; font-size: 13px; }
+        .pay-instructions h4 { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .pay-instructions p { font-size: 13px; color: #555; margin-bottom: 6px; line-height: 1.4; }
+        
+        .order-summary-item { display: flex; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 12px; }
+        .os-img { width: 50px; height: 50px; background: #f4f4f4; border-radius: 5px; border: 1px solid #ddd; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+        .os-img img { width: 100%; height: 100%; object-fit: contain; padding: 2px;}
+        .os-details { flex: 1; }
+        .os-name { font-weight: bold; font-size: 13px; color: #333; margin-bottom: 4px; }
+        .os-opt { font-size: 11px; color: #777; margin-bottom: 4px; }
+        .os-price-qty { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; }
+        .os-calc-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #555; }
+        .os-calc-row.total { font-size: 16px; font-weight: bold; color: #333; border-top: 1px solid #eee; padding-top: 8px; margin-top: 4px; }
+        .btn-confirm { width: 100%; background: #2ecc71; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .btn-confirm:hover { background: #27ae60; }
+        .btn-back-shop-top { background: #2ecc71; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 15px; transition: 0.3s; box-shadow: 0 2px 6px rgba(46,204,113,0.3); }
+        .btn-back-shop-top:hover { background: #27ae60; }
+
+        /* ================= MOBILE BOTTOM NAVIGATION BAR ================= */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            z-index: 9999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        @media(min-width: 768px) { .mobile-bottom-nav { display: none; } }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #777;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-item.active { color: #2ecc71; font-weight: bold; }
+        .nav-item svg { width: 22px; height: 22px; margin-bottom: 3px; fill: currentColor; }
+
+        /* ================= PRO ADMIN PANEL & USER DASHBOARD ================= */
+        #admin-panel, #user-dashboard { display: none; background: #f4f6f8; color: #333; min-height: 100vh; padding-bottom: 40px;}
+        .admin-layout { display: flex; flex-direction: column; min-height: 100vh; }
+        @media(min-width: 768px) { .admin-layout { flex-direction: row; } }
+        
+        .admin-sidebar { width: 100%; background: #1a252f; color: white; padding-top: 15px; flex-shrink: 0; }
+        @media(min-width: 768px) { .admin-sidebar { width: 260px; } }
+        .admin-sidebar h2 { padding: 0 15px 15px; border-bottom: 1px solid #2c3e50; font-size: 16px; color: #2ecc71; display:flex; align-items:center; gap:10px;}
+        .admin-nav { list-style: none; padding: 0; margin-top: 10px; display: flex; overflow-x: auto; }
+        @media(min-width: 768px) { .admin-nav { display: block; overflow-x: visible; } }
+        .admin-nav li { padding: 12px 15px; cursor: pointer; transition: 0.3s; border-left: 4px solid transparent; display:flex; align-items:center; gap:8px; font-size: 13px; white-space: nowrap;}
+        .admin-nav li:hover { background: #2c3e50; }
+        .admin-nav li.active { background: #2c3e50; border-left-color: #2ecc71; font-weight: bold; color: #2ecc71;}
+        
+        .admin-content { flex: 1; padding: 15px; }
+        @media(min-width: 768px) { .admin-content { padding: 30px; } }
+        .admin-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #ddd; }
+        .admin-header-bar h1 { font-size: 18px; color: #2c3e50; } @media(min-width: 768px) { .admin-header-bar h1 { font-size: 24px; } }
+        
+        .admin-section { display: none; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; overflow-x: auto; }
+        .admin-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .admin-section h3 { color: #2c3e50; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eee; font-size: 16px;}
+        
+        .form-group { margin-bottom: 12px; } 
+        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 13px; color: #555;}
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; outline: none;}
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #2ecc71; }
+        
+        .user-layout { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+        @media(min-width: 768px) { .user-layout { flex-direction: row; gap: 30px; } }
+        .user-sidebar { width: 100%; background: #fff; border-radius: 8px; border: 1px solid #eee; overflow: hidden; height: fit-content;}
+        @media(min-width: 768px) { .user-sidebar { width: 25%; } }
+        .user-content { width: 100%; background: #fff; border-radius: 8px; border: 1px solid #eee; padding: 20px; min-height: 350px; overflow-x: auto;}
+        @media(min-width: 768px) { .user-content { width: 75%; padding: 25px; } }
+
+        /* ================= FLOATING & DRAGGABLE WIDGETS & VIDEO ================= */
+        .floating-widget, .floating-video {
+            position: fixed;
+            z-index: 9999;
+            border: 2px solid #2ecc71;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: #000;
+            user-select: none;
+            width: 260px;
+            height: 180px;
+            display: none;
+        }
+        .floating-widget img, .floating-widget video, .floating-video video { width: 100%; height: calc(100% - 18px); object-fit: cover; display: block; }
+        .widget-drag-handle, .video-drag-handle { background: rgba(46, 204, 113, 0.9); color: white; font-size: 9px; text-align: center; padding: 2px; font-weight: bold; letter-spacing: 1px; cursor: move; height: 18px; }
+
+        /* শুধুমাত্র মোবাইলে ভিডিও এবং অ্যাড উইজেট বন্ধ রাখার জন্য মিডিয়া কুয়েরি (পিসিতে অক্ষত থাকবে) */
+        @media (max-width: 768px) {
+            .floating-video, .floating-widget {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="videoPlayersWrapper"></div>
+
+    <div id="sideWidgetsWrapper"></div>
+
+    <div class="admin-notice"><span class="notice-text" id="displayNotice">📢 Admin Notice: Welcome to টপ বাই সেল store! Get the best deals here.</span></div>
+    <div class="sticky-header-wrapper">
+        <div class="container header">
+            <div class="logo" id="siteLogo" onclick="toggleView('shop')">
+                <img src="watermarked_img_13549971715171506426.jpg" alt="টপ বাই সেল" style="height: 38px;">
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search product or tag..." oninput="handleUserSearch(this.value)">
+                <button class="search-btn-custom" onclick="executeUserSearch()">Search</button>
+            </div>
+            <div class="header-icons" id="authSection"></div>
+        </div>
+    </div>
+
+    <div id="shop-view" class="container">
+        <div class="banner-slider" id="mainBannerSlider"><div class="banner-slide active" style="background-color: #e0f7fa;"><span id="bannerDefaultText">[ব্যানার]</span></div></div>
+        
+        <div id="customAdsWrapper"></div>
+
+        <div class="section-header"><h2>Categories</h2><span class="view-all-btn" onclick="toggleView('category')">View All ❯</span></div>
+        <div class="categories" id="homeCategories"></div>
+        
+        <div class="section-header" style="margin-top: 35px;">
+            <h2>Flash Sale <div class="timer"><span class="time-box" id="hours">03</span>:<span class="time-box" id="minutes">45</span>:<span class="time-box" id="seconds">30</span></div></h2>
+            <span class="view-all-btn" onclick="toggleView('category')">View All ❯</span>
+        </div>
+        <div class="product-grid" id="homeProductGrid"></div>
+        
+        <div id="homeCategorySections"></div>
+
+        <div class="recent-orders-container">
+            <div class="recent-orders-title">Recent Orders</div>
+            <table class="recent-orders-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Date</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recentOrdersTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="footer-section">
+            <div class="container footer-flex">
+                <div class="support-box">
+                    <h4>Contact Support</h4>
+                    <div class="support-btns">
+                        <button class="btn-support-group" id="footerGroupBtn" onclick="window.open('#', '_blank')">Join Group</button>
+                        <button class="btn-support-tg" id="footerTgBtn" onclick="window.open('#', '_blank')">Telegram</button>
+                    </div>
+                </div>
+                <div class="payment-accept-box">
+                    <h4>Payment Accept</h4>
+                    <div class="payment-icons" id="footerPaymentIcons"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-green-bar">
+            <h3>Quick Links</h3>
+            <div class="footer-links">
+                <span>About Us</span> | <span>Refund and Returns</span> | <span>Terms & Condition</span> | <span>Privacy Policy</span>
+            </div>
+            <div class="footer-copy">Copyright © 2026 টপ বাই সেল (Top Buy Sell)</div>
+        </div>
+        <br><br>
+    </div>
+
+    <div id="category-view" class="container">
+        <div style="text-align: left; margin: 15px 0;">
+            <button class="btn-back-shop-top" onclick="toggleView('shop')">← Back to Shop</button>
+        </div>
+        <div class="cat-page-wrapper">
+            <div class="sidebar">
+                <div class="sidebar-header">Categories</div>
+                <div id="sidebarCategoriesList"></div>
+                <div style="padding: 0 15px 15px 15px;"><button class="clear-filter-btn" onclick="toggleView('shop')">Clear All Filters</button></div>
+            </div>
+            <div class="main-content"><div class="product-grid" id="categoryProductGrid"></div></div>
+        </div>
+        <br><br>
+    </div>
+
+    <div id="product-details-view" class="container">
+        <div style="margin: 20px 0;"><button class="btn-primary" onclick="toggleView('shop')">← Back to Shop</button></div>
+        
+        <div class="pdp-main-layout">
+            <div class="pdp-center-col">
+                <div class="pdp-top-card">
+                    <div class="pdp-img-box" id="pdpImgBox" onmousemove="zoomProductImg(event)" onmouseleave="resetProductZoom()"></div>
+                    <div class="pdp-info-box">
+                        <div class="pdp-title" id="pdpTitle">Amazon Prime Video [4K UHD]</div>
+                        <div class="pdp-rating">☆☆☆☆☆ (2 reviews)</div>
+                        <div class="pdp-price-row">
+                            <span class="pdp-price">৳ <span id="pdpPrice">5</span></span>
+                            <span class="pdp-old-price">৳ <span id="pdpOldPrice">10</span></span>
+                            <span class="pdp-save-badge">৳ 5 Off</span>
+                        </div>
+                        <div class="pdp-opt-title">Select Account Quality :</div>
+                        <div class="pdp-options-row">
+                            <div class="pdp-opt-pill active" onclick="selectPdpOpt('Private Screen 1M', this)">Private Screen 1M</div>
+                            <div class="pdp-opt-pill" onclick="selectPdpOpt('Private Screen 6M', this)">Private Screen 6M</div>
+                        </div>
+                        <div class="pdp-action-bar">
+                            <div class="pdp-qty-group">
+                                <button onclick="changePdpQty(-1)">-</button>
+                                <input type="text" id="pdpQtyVal" value="1" readonly>
+                                <button onclick="changePdpQty(1)">+</button>
+                            </div>
+                            <button class="pdp-cart-btn" onclick="pdpAddToCart()">🛒 Add to cart</button>
+                            <button class="pdp-buy-btn" onclick="pdpBuyNow()">⚡ Buy Now</button>
+                        </div>
+                        <div class="pdp-meta-info">
+                            <div>Category: <span id="pdpCatName" style="color:#2ecc71; font-weight:bold;">Subscriptions</span></div>
+                            <div>Brand: <span style="color:#555;">-</span></div>
+                            <div>Tags: <span id="pdpTags" style="color:#2ecc71; font-weight:bold;">Flash Sale</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pdp-desc-card">
+                    <div class="pdp-desc-tabs">
+                        <div class="pdp-tab-item" id="tabDescBtn" onclick="switchPdpTab('desc')">Description</div>
+                        <div class="pdp-tab-item inactive" id="tabRevBtn" onclick="switchPdpTab('reviews')">Reviews(2)</div>
+                    </div>
+                    <div id="pdpTabContent" style="font-size: 14px; color: #555; line-height: 1.6;">
+                        🔥 Amazon Prime Video 6 month Bulk Amount Available ! ✅ Own Mail ✅ Full Account ✅ Bd/ India Both available region ✅ Full Warranty
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdp-right-col">
+                <div class="pdp-box">
+                    <div class="pdp-box-title">Related Products</div>
+                    <div id="pdpRelatedProductsContainer"></div>
+                </div>
+
+                <div class="pdp-box">
+                    <div class="pdp-box-title">Category</div>
+                    <div id="pdpSidebarCategories"></div>
+                </div>
+            </div>
+        </div>
+        <br><br>
+    </div>
+
+    <div id="checkout-view" class="container">
+        <div style="text-align: left; margin-top: 15px;">
+            <button class="btn-back-shop-top" onclick="toggleView('shop')">← Back to Shop</button>
+        </div>
+        <div class="checkout-grid">
+            <div class="chk-left">
+                <div class="chk-section-title">Delivery Address</div>
+                <div class="chk-row">
+                    <input type="text" id="chkName" class="chk-input" placeholder="Full Name*">
+                    <input type="text" id="chkPhone" class="chk-input" placeholder="Enter Your Phone Number*">
+                </div>
+                <div class="chk-row"><input type="email" id="chkEmail" class="chk-input" placeholder="Enter Your Email*"></div>
+                <div class="chk-row"><textarea id="chkNote" class="chk-input" rows="3" placeholder="Enter your order note (Optional)"></textarea></div>
+
+                <div class="chk-section-title" style="margin-top: 25px;">Select a Payment Option</div>
+                <div class="payment-methods">
+                    <div class="pay-card active" id="payBkash" onclick="selectPayment('Bkash')">
+                        <img id="chkBkashLogo" src="" alt="bKash"><br><b>Bkash</b>
+                    </div>
+                    <div class="pay-card" id="payBinance" onclick="selectPayment('Binance')">
+                        <img id="chkBinanceLogo" src="" alt="Binance"><br><b>Binance</b>
+                    </div>
+                </div>
+
+                <div class="pay-instructions" id="payInstBox"></div>
+
+                <div class="chk-row"><input type="text" id="chkPayNumber" class="chk-input" placeholder="Your Account Number*"></div>
+                <div class="chk-row"><input type="text" id="chkTrxId" class="chk-input" placeholder="Transaction ID*"></div>
+            </div>
+
+            <div class="chk-right">
+                <div class="chk-section-title">Order Items (1 Item)</div>
+                <div class="order-summary-item">
+                    <div class="os-img" id="chkItemImg"></div>
+                    <div class="os-details">
+                        <div class="os-name" id="chkItemName">Product Name</div>
+                        <div class="os-opt">Duration: <span id="chkItemOpt">1 Month</span></div>
+                        <div class="os-price-qty">
+                            <span style="color:#777;">Qty: <span id="chkItemQty">1</span></span>
+                            <span style="color:#2ecc71;">৳ <span id="chkItemPrice">0</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="os-calc-row"><span>Sub Total:</span><span>৳ <span id="chkSubTotal">0</span></span></div>
+                <div class="os-calc-row"><span>Discount:</span><span>-৳ <span id="chkDiscount">0</span></span></div>
+                <div class="os-calc-row"><span>Delivery Charge:</span><span>৳ 0</span></div>
+                <div class="os-calc-row total"><span>GrandTotal:</span><span>৳ <span id="chkGrandTotal">0</span></span></div>
+                
+                <p style="font-size: 13px; color: #7f8c8d; margin-top: 12px;">Do have any coupon code?</p>
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 15px;">
+                    <button class="btn-confirm" style="width: auto; margin-top: 0;" onclick="confirmCheckoutOrder()">✓ Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="user-dashboard">
+        <div class="container user-layout">
+            <div class="user-sidebar" style="text-align: center; padding: 20px;">
+                <div id="userAvatarBox" style="width: 80px; height: 80px; border-radius: 50%; background: #eee; margin: 0 auto 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid #2ecc71;">
+                    👤
+                </div>
+                <h4 id="dashboardUserEmail" style="font-size: 13px; color: #333; margin-bottom: 15px; word-break: break-all;">user@gmail.com</h4>
+                <div class="form-group" style="text-align: left;">
+                    <label style="font-size: 11px;">Upload Profile Picture:</label>
+                    <input type="file" id="userAvatarUpload" accept="image/*" onchange="updateUserAvatar(this)" style="font-size: 11px; padding: 5px;">
+                </div>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                <div class="sidebar-item active" style="justify-content: center;"><div class="sidebar-item-content">🛍️ My Orders</div></div>
+                <div class="sidebar-item" onclick="toggleView('shop')" style="justify-content: center;"><div class="sidebar-item-content">🏠 Back to Shop</div></div>
+                <div class="sidebar-item" onclick="logout()" style="color: #e74c3c; justify-content: center;"><div class="sidebar-item-content">🚪 Logout</div></div>
+            </div>
+            
+            <div class="user-content">
+                <h3 style="margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Order History</h3>
+                <table>
+                    <thead><tr><th>Order ID</th><th>Product Details</th><th>Price</th><th>Status</th><th>Delivery Details</th></tr></thead>
+                    <tbody id="userOrdersList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <div class="admin-layout">
+            <div class="admin-sidebar">
+                <h2>⚙️ Admin Panel</h2>
+                <ul class="admin-nav">
+                    <li class="active" onclick="switchAdminTab('sec-orders', this)">🔔 Customer Orders</li>
+                    <li onclick="switchAdminTab('sec-users', this)">👥 Registered Users</li>
+                    <li onclick="switchAdminTab('sec-landing', this)">🌐 Landing Pages</li>
+                    <li onclick="switchAdminTab('sec-topbar', this)">🎨 Top Announcement Bar</li>
+                    <li onclick="switchAdminTab('sec-sidewidgets', this)">🎯 Side Ads & Widgets</li>
+                    <li onclick="switchAdminTab('sec-payment', this)">💳 Payment Settings</li>
+                    <li onclick="switchAdminTab('sec-footer', this)">🌐 Footer & Support</li>
+                    <li onclick="switchAdminTab('sec-logo', this)">🖼️ Site Logo</li>
+                    <li onclick="switchAdminTab('sec-notice', this)">📢 Scrolling Notice</li>
+                    <li onclick="switchAdminTab('sec-video', this)">🎥 Floating Video</li>
+                    <li onclick="switchAdminTab('sec-category', this)">📁 Manage Categories</li>
+                    <li onclick="switchAdminTab('sec-banner', this)">🖼️ Banner Slider</li>
+                    <li onclick="switchAdminTab('sec-products', this)">➕ Manage Products</li>
+                    
+                    <li style="margin-top: 30px; border-top: 1px solid #2c3e50; color: #3498db;" onclick="toggleView('shop')">🏠 Back to Shop</li>
+                    <li onclick="logoutAdmin()" style="color: #e67e22;">🔒 Logout Admin</li>
+                    <li onclick="resetAllData()" style="color: #e74c3c;">🔄 Factory Reset</li>
+                </ul>
+            </div>
+
+            <div class="admin-content">
+                <div class="admin-header-bar">
+                    <h1 id="adminSectionTitle">Customer Orders</h1>
+                    <button class="btn-primary" onclick="toggleView('shop')">View Website</button>
+                </div>
+
+                <div id="sec-orders" class="admin-section active">
+                    <p style="margin-bottom: 15px; color:#7f8c8d;">Track and deliver customer orders from here.</p>
+                    <table style="color: #333; font-size: 13px;">
+                        <thead><tr><th>Order ID</th><th>Customer Info</th><th>Product Details</th><th>Payment Info</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="adminOrdersList"></tbody>
+                    </table>
+                </div>
+
+                <div id="sec-users" class="admin-section">
+                    <p style="margin-bottom: 15px; color:#7f8c8d;">Manage registered users (Delete or Block).</p>
+                    <table>
+                        <thead><tr><th>Avatar</th><th>Email</th><th>Password</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="adminUsersListBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="sec-landing" class="admin-section">
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px; color:#2c3e50;">Create / Upload Landing Page</h4>
+                        <div class="form-group"><label>Landing Page Title:</label><input type="text" id="lpTitle" placeholder="e.g. Special AI Offer"></div>
+                        <div class="form-group"><label>Landing Page Slug (URL path):</label><input type="text" id="lpSlug" placeholder="e.g. special-offer"></div>
+                        <div class="form-group"><label>Method 1: HTML Code (Paste your custom HTML code here):</label><textarea id="lpCode" rows="6" placeholder="<div>Your custom HTML code...</div>"></textarea></div>
+                        <div class="form-group"><label>Method 2: Or Upload HTML File:</label><input type="file" id="lpFile" accept=".html"></div>
+                        <button class="admin-btn-save" onclick="saveLandingPage()">Publish Landing Page</button>
+                    </div>
+                    <h4 style="margin-bottom: 10px;">Active Landing Pages</h4>
+                    <table>
+                        <thead><tr><th>Title</th><th>Slug / URL</th><th>Action</th></tr></thead>
+                        <tbody id="adminLandingListBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="sec-topbar" class="admin-section">
+                    <div style="max-width: 600px;">
+                        <h4 style="color:#2c3e50; margin-bottom:15px;">Customize Top Announcement Bar</h4>
+                        <div class="form-group"><label>Bar Text Content:</label><input type="text" id="adminTopBarText" placeholder="Type text here..."></div>
+                        <div class="form-group"><label>Background Color:</label><input type="color" id="adminTopBarBg" value="#2ecc71" style="height:40px; padding:2px;"></div>
+                        <div class="form-group"><label>Text Color:</label><input type="color" id="adminTopBarColor" value="#ffffff" style="height:40px; padding:2px;"></div>
+                        <div class="form-group">
+                            <label>Animation Style:</label>
+                            <select id="adminTopBarAnim">
+                                <option value="static">Static (Still)</option>
+                                <option value="marquee">Marquee (Scrolling / Animated)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visibility:</label>
+                            <select id="adminTopBarShow">
+                                <option value="show">Show Bar</option>
+                                <option value="hide">Hide (Hidden)</option>
+                            </select>
+                        </div>
+                        <button class="admin-btn-save" onclick="saveTopBarSettings()">Save Top Bar Settings</button>
+                    </div>
+                </div>
+
+                <div id="sec-sidewidgets" class="admin-section">
+                    <div style="max-width: 600px;">
+                        <h4 style="color:#2c3e50; margin-bottom:15px;">Upload Side Ad Image / Animated GIF / Video</h4>
+                        <div class="form-group">
+                            <label>Upload Media (Image / GIF / Video):</label>
+                            <input type="file" id="adminSideWidgetInput" accept="image/*,video/mp4,video/webm">
+                            <small style="color:#7f8c8d;">Upload your ad banner or animated file for the left/right boxes.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Placement Side:</label>
+                            <select id="adminSideWidgetSide">
+                                <option value="left">Left Side</option>
+                                <option value="right">Right Side</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Opacity (স্বচ্ছতা - 0.1 to 1.0):</label>
+                            <input type="number" id="adminSideWidgetOpacity" min="0.1" max="1.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Widget Visibility:</label>
+                            <select id="adminSideWidgetShow">
+                                <option value="show">Show Side Widgets</option>
+                                <option value="hide">Hide (Hidden by default)</option>
+                            </select>
+                        </div>
+                        <button class="admin-btn-save" onclick="saveSideWidgetSettings()">Add & Save Side Widget</button>
+                        
+                        <h4 style="margin-top: 30px; margin-bottom: 10px;">Active Side Widgets</h4>
+                        <div id="adminWidgetsListContainer"></div>
+                    </div>
+                </div>
+
+                <div id="sec-payment" class="admin-section">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                            <h4 style="color:#e74c3c; margin-bottom:12px; font-size:15px;">Bkash Settings</h4>
+                            <div class="form-group"><label>Bkash Logo:</label><input type="file" id="adminBkashLogo" accept="image/*"></div>
+                            <div class="form-group"><label>Bkash Number:</label><input type="text" id="adminBkashNumber" placeholder="e.g. 01332301478"></div>
+                            <div class="form-group"><label>Instructions (Rules):</label><textarea id="adminBkashInst" rows="4"></textarea></div>
+                        </div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                            <h4 style="color:#f1c40f; margin-bottom:12px; font-size:15px;">Binance Settings</h4>
+                            <div class="form-group"><label>Binance Logo:</label><input type="file" id="adminBinanceLogo" accept="image/*"></div>
+                            <div class="form-group"><label>Binance Pay ID / API:</label><input type="text" id="adminBinanceId" placeholder="e.g. 123456789"></div>
+                            <div class="form-group"><label>Instructions (Rules):</label><textarea id="adminBinanceInst" rows="4"></textarea></div>
+                        </div>
+                    </div>
+                    <button class="admin-btn-save" style="margin-top: 15px; width: 100%;" onclick="savePaymentSettings()">Save Payment Settings</button>
+                </div>
+
+                <div id="sec-footer" class="admin-section">
+                    <div style="max-width: 600px;">
+                        <h4 style="color:#2c3e50; margin-bottom:15px;">Contact Support & Payment Accept Logos</h4>
+                        <div class="form-group"><label>Support Group Button Text:</label><input type="text" id="adminGroupText" value="Join Group"></div>
+                        <div class="form-group"><label>Support Group Link (URL):</label><input type="text" id="adminGroupLink" placeholder="https://t.me/..."></div>
+                        <div class="form-group"><label>Telegram Button Text:</label><input type="text" id="adminTgText" value="Telegram"></div>
+                        <div class="form-group"><label>Telegram Link (URL):</label><input type="text" id="adminTgLink" placeholder="https://t.me/..."></div>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Payment Accept Logos (Upload multiple images):</label>
+                            <input type="file" id="adminPayLogosInput" accept="image/*" multiple>
+                        </div>
+                        <button class="admin-btn-save" onclick="saveFooterSettings()">Save Footer Settings</button>
+                    </div>
+                </div>
+
+                <div id="sec-logo" class="admin-section">
+                    <div style="max-width: 500px;">
+                        <p style="margin-bottom: 12px; color:#7f8c8d;">Upload a clear PNG or transparent image for the top navigation bar.</p>
+                        <div class="form-group"><label>Upload New Logo:</label><input type="file" id="adminLogoInput" accept="image/*"></div>
+                        <button class="admin-btn-save" onclick="updateLogo()">Upload Logo</button>
+                    </div>
+                </div>
+
+                <div id="sec-notice" class="admin-section">
+                    <div style="max-width: 600px;">
+                        <p style="margin-bottom: 12px; color:#7f8c8d;">Change the scrolling text that appears at the very top of the website.</p>
+                        <div class="form-group"><label>New Notice Text:</label><input type="text" id="adminNoticeInput" placeholder="Type new notice here..."></div>
+                        <button class="admin-btn-save" onclick="updateNotice()">Update Notice</button>
+                    </div>
+                </div>
+
+                <div id="sec-video" class="admin-section">
+                    <div style="max-width: 600px;">
+                        <p style="margin-bottom: 12px; color:#7f8c8d;">Manage floating video settings, quantity, visibility, opacity and user permissions.</p>
+                        <div class="form-group"><label>Upload Video File (MP4/WebM):</label><input type="file" id="adminVideoInput" accept="video/mp4,video/webm,video/ogg"></div>
+                        <div class="form-group">
+                            <label>Video Visibility (Show/Hide):</label>
+                            <select id="adminVideoShow">
+                                <option value="show">Show Video</option>
+                                <option value="hide">Hide (Hidden by default)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Video Players (Quantity):</label>
+                            <input type="number" id="adminVideoCount" min="1" max="5" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Opacity (স্বচ্ছতা - 0.1 to 1.0):</label>
+                            <input type="number" id="adminVideoOpacity" min="0.1" max="1.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Allow Users to Drag/Move Video?</label>
+                            <select id="adminVideoDragPerm">
+                                <option value="admin">Only Admin Can Drag</option>
+                                <option value="all">Allow Users & Admin to Drag</option>
+                            </select>
+                        </div>
+                        <button class="admin-btn-save" onclick="saveVideoSettings()">Save Video Settings</button>
+                    </div>
+                </div>
+
+                <div id="sec-category" class="admin-section">
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                        <h4 style="margin-bottom:12px;">Add New Category</h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" id="catName" placeholder="Category Name" style="width:100%; border:1px solid #ccc; border-radius: 5px; padding:10px; outline:none;">
+                            <input type="file" id="catImage" accept="image/*" style="width:100%; border:1px solid #ccc; border-radius: 5px; padding:10px;">
+                            <button class="admin-btn-save" style="width:100%; margin-top:0;" onclick="addCategory()">Add Category</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Icon</th><th>Category Name</th><th>Action</th></tr></thead>
+                        <tbody id="adminCategoryList"></tbody>
+                    </table>
+                </div>
+
+                <div id="sec-banner" class="admin-section">
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <p style="margin-bottom: 12px; color:#7f8c8d;">You can select up to 5 images (Hold CTRL to select multiple).</p>
+                        <div class="form-group"><input type="file" id="adminBannerInput" accept="image/*" multiple></div>
+                        <button class="admin-btn-save" onclick="updateBanners()">Upload & Save Banners</button>
+                    </div>
+                </div>
+
+                <div id="sec-products" class="admin-section">
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                        <h4 style="margin-bottom:12px;">Add New Product</h4>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                            <div class="form-group"><label>Product Name:</label><input type="text" id="pName"></div>
+                            <div class="form-group"><label>Category:</label><select id="pCategory"></select></div>
+                            <div class="form-group"><label>Image:</label><input type="file" id="pImageUpload" accept="image/*"></div>
+                            <div class="form-group"><label>Sale Price (৳):</label><input type="number" id="pPrice" oninput="calcDisc('p')"></div>
+                            <div class="form-group"><label>Old Price (৳):</label><input type="number" id="pOldPrice" oninput="calcDisc('p')"></div>
+                            <div class="form-group"><label>Discount (%):</label><input type="number" id="pDiscount" placeholder="Auto calculated or type manually"></div>
+                            <div class="form-group"><label>Stock Quantity:</label><input type="number" id="pStock" value="10"></div>
+                            <div class="form-group"><label>Tags:</label><input type="text" id="pTags" placeholder="Flash Sale"></div>
+                            <div class="form-group"><label>Description:</label><textarea id="pDesc" rows="3" placeholder="Enter full description..."></textarea></div>
+                            <div class="form-group"><label>Reviews Text:</label><textarea id="pReviews" rows="2" placeholder="Enter reviews info..."></textarea></div>
+                            <div class="form-group">
+                                <label>Product Visibility:</label>
+                                <select id="pVisibility">
+                                    <option value="show">Show on Website</option>
+                                    <option value="hide">Hide (Hidden)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="admin-btn-save" style="margin-top: 10px;" onclick="addProduct()">Publish Product</button>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin:0;">📦 Product List</h4>
+                        <input type="text" id="adminProductSearchInput" placeholder="Search product or tag in list..." style="width: 250px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;" oninput="filterAdminProductList(this.value)">
+                    </div>
+                    <table>
+                        <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Tags</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="adminProductList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content dark-modal" style="text-align: center;">
+            <span class="close-modal" onclick="closeModal('adminLoginModal')">×</span>
+            <h2 style="color: #2ecc71; margin-bottom: 10px;">Admin Security</h2>
+            <p style="color: #bdc3c7; font-size: 13px; margin-bottom: 20px;">Please verify your identity to access panel.</p>
+            <div class="form-group"><input type="password" id="adminPass" placeholder="Admin Password" style="background:#34495e; color:white; border:1px solid #7f8c8d;"></div>
+            <div class="form-group">
+                <label style="color:#bdc3c7; text-align:left; font-size:12px; margin-bottom:3px;">Security Question: What is your admin security key?</label>
+                <input type="text" id="admin2FA" placeholder="Enter Security Answer" style="background:#34495e; color:white; border:1px solid #7f8c8d;">
+            </div>
+            <button class="admin-btn-save" style="width: 100%; margin-top: 10px;" onclick="processAdminLogin()">Verify & Login</button>
+        </div>
+    </div>
+
+    <!-- Login / Sign Up Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('loginModal')">×</span>
+            <h2 id="authModalTitle">Welcome Back</h2>
+            <p class="modal-subtext" id="authModalSub">Login with your email and password</p>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tabLogin" onclick="switchAuthMode('login')">Login</div>
+                <div class="auth-tab" id="tabSignup" onclick="switchAuthMode('signup')">Sign Up</div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="authEmail" placeholder="Enter your email address">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="authPassword" placeholder="Enter your password">
+            </div>
+            <button class="admin-btn-save" id="authSubmitBtn" onclick="processAuth()">Login</button>
+        </div>
+    </div>
+    
+    <div id="actionSuccessModal" class="modal success-modal">
+        <div class="modal-content">
+            <div class="success-icon">✅</div>
+            <h2 id="actionTitle" style="color: #2ecc71; margin-bottom: 8px;">Success!</h2>
+            <p id="actionMessage" style="color: #666; font-size: 14px; margin-bottom: 15px;"></p>
+            <button class="admin-btn-save" style="width: 100%;" onclick="closeSuccessAndGoHome()">OK</button>
+        </div>
+    </div>
+
+    <div id="deliveryModal" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('deliveryModal')">×</span><h3 style="color: #e74c3c; margin-bottom: 15px;">Deliver Product</h3><input type="hidden" id="dOrderId"><div class="form-group"><textarea id="dDetails" rows="5" placeholder="Email: user@gmail.com\nPass: 123456"></textarea></div><button class="admin-btn-save" style="width: 100%;" onclick="submitDelivery()">Send to User</button></div></div>
+    
+    <div id="editCatModal" class="modal"><div class="modal-content dark-modal"><span class="close-modal" onclick="closeModal('editCatModal')">×</span><h3 style="color: #2ecc71; margin-bottom: 15px;">✏️ Edit Category</h3><input type="hidden" id="cIndex"><div class="form-group"><label>Category Name:</label><input type="text" id="cName"></div><div class="form-group"><label>Category Icon:</label><input type="file" id="cImageUpload" accept="image/*"></div><button class="admin-btn-save" style="width: 100%;" onclick="saveEditCategory()">Save Category</button></div></div>
+    
+    <div id="editProductModal" class="modal">
+        <div class="modal-content dark-modal" style="max-height: 90vh; overflow-y: auto;">
+            <span class="close-modal" onclick="closeModal('editProductModal')">×</span>
+            <h3 style="color: #2ecc71; margin-bottom: 15px;">✏️ Edit Product</h3>
+            <input type="hidden" id="eIndex">
+            <div class="form-group"><label>Name:</label><input type="text" id="eName"></div>
+            <div class="form-group"><label>Category:</label><select id="eCategory"></select></div>
+            <div class="form-group"><label>Image:</label><input type="file" id="eImageUpload" accept="image/*"></div>
+            <div class="form-group"><label>Price (৳):</label><input type="number" id="ePrice" oninput="calcDisc('e')"></div>
+            <div class="form-group"><label>Old Price (৳):</label><input type="number" id="eOldPrice" oninput="calcDisc('e')"></div>
+            <div class="form-group"><label>Discount (%):</label><input type="number" id="eDiscount" placeholder="Auto calculated"></div>
+            <div class="form-group"><label>Stock Quantity:</label><input type="number" id="eStock"></div>
+            <div class="form-group"><label>Tags:</label><input type="text" id="eTags"></div>
+            <div class="form-group"><label>Description:</label><textarea id="eDesc" rows="3"></textarea></div>
+            <div class="form-group"><label>Reviews Text:</label><textarea id="eReviews" rows="2"></textarea></div>
+            <div class="form-group">
+                <label>Product Visibility:</label>
+                <select id="eVisibility">
+                    <option value="show">Show on Website</option>
+                    <option value="hide">Hide (Hidden)</option>
+                </select>
+            </div>
+            <button class="admin-btn-save" style="width: 100%;" onclick="saveEditProduct()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- ল্যান্ডিং পেজ ভিউয়ার কন্টেইনার -->
+    <div id="landing-page-view" style="display:none; min-height: 100vh; background:#fff;"></div>
+
+    <div class="mobile-bottom-nav">
+        <div class="nav-item active" onclick="toggleView('shop')">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Home
+        </div>
+        <div class="nav-item" onclick="toggleView('category')">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+            Categories
+        </div>
+        <div class="nav-item" onclick="alert('Opening Chat Support...')">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            Chat
+        </div>
+        <div class="nav-item" onclick="toggleView('dashboard')">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            Account
+        </div>
+    </div>
+
+    <!-- Firebase SDK Setup (আপনার নতুন কনফিগারেশন সহ) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCA5MzdL8Gz5Uy0kfCYe-PgD5BAWORpdhA",
+            authDomain: "newp-c109f.firebaseapp.com",
+            projectId: "newp-c109f",
+            storageBucket: "newp-c109f.firebasestorage.app",
+            messagingSenderId: "898597475300",
+            appId: "1:898597475300:web:f49232dbb03f25bb8cedf1",
+            measurementId: "G-7570Z71WWX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        console.log("Firebase Connected Successfully with new config!");
+    </script>
+
+    <script>
+        const CAT_KEY = 'eG_Cat_65'; const PROD_KEY = 'eG_Prod_65'; const BANNER_KEY = 'eG_Ban_65'; const LOGO_KEY = 'eG_Logo_65'; const ORDERS_KEY = 'eG_Ord_65'; const PAY_SET_KEY = 'eG_PaySet_65'; const NOTICE_KEY = 'eG_Notice_65'; const VIDEO_KEY = 'eG_Vid_65'; const VID_CONFIG_KEY = 'eG_VidConf_65'; const FOOTER_KEY = 'eG_Footer_65'; const TOPBAR_KEY = 'eG_TopBar_65'; const ADS_KEY = 'eG_Ads_65'; const SIDE_WIDGETS_KEY = 'eG_SideWidgets_65'; const USERS_KEY = 'eG_Users_65'; const LANDING_KEY = 'eG_Landings_65';
+        
+        let currentUser = localStorage.getItem('eG_User');
+        let isAdminLoggedIn = false; 
+        let currentSlide = 0; let slideInterval;
+        let cartTotal = 0; let cartPrice = 0;
+        let authMode = 'login'; 
+        
+        let qvCurrentProd = null; let qvSelectedOpt = "Private Screen 1M"; let qvCurrentQty = 1;
+        let selectedPaymentMethod = "Bkash"; let currentPaySettings = null; 
+
+        let currentPdpProd = null; let pdpQty = 1;
+
+        const defaultCats = [ 
+            { id: "c1", name: "Ai Tools", iconUrl: "https://www.google.com/s2/favicons?domain=openai.com&sz=128" }, 
+            { id: "c2", name: "Subscriptions", iconUrl: "https://www.google.com/s2/favicons?domain=netflix.com&sz=128" }, 
+            { id: "c3", name: "Verified Accounts", iconUrl: "https://www.google.com/s2/favicons?domain=linkedin.com&sz=128" }, 
+            { id: "c4", name: "Gift Cards", iconUrl: "https://www.google.com/s2/favicons?domain=play.google.com&sz=128" },
+            { id: "c5", name: "VPN & Security", iconUrl: "https://www.google.com/s2/favicons?domain=nordvpn.com&sz=128" },
+            { id: "c6", name: "Windows Utility Key", iconUrl: "https://www.google.com/s2/favicons?domain=microsoft.com&sz=128" },
+            { id: "c7", name: "Other", iconUrl: "https://www.google.com/s2/favicons?domain=envato.com&sz=128" }
+        ];
+
+        const defaultProds = [
+            { id: "p1", name: "ChatGPT Plus", categoryId: "c1", imageText: "GPT", imageUrl: "https://www.google.com/s2/favicons?domain=openai.com&sz=128", price: "450", oldPrice: "2200", discount: "80", stock: "15", tags: "AI, GPT, Flash Sale", visibility: "show", description: "🔥 ChatGPT Plus Account with GPT-4 access and fast response speed.", reviews: "⭐⭐⭐⭐⭐ (5 reviews): Excellent service and instant delivery!" },
+            { id: "p2", name: "Gemini Advanced", categoryId: "c1", imageText: "GMNI", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg", price: "500", oldPrice: "850", discount: "40", stock: "20", tags: "AI, Google, Flash Sale", visibility: "show", description: "✨ Google Gemini Advanced with 2TB cloud storage included.", reviews: "⭐⭐⭐⭐ (2 reviews): Works very well." },
+            { id: "p3", name: "Canva Pro", categoryId: "c1", imageText: "CNVA", imageUrl: "https://www.google.com/s2/favicons?domain=canva.com&sz=128", price: "100", oldPrice: "300", discount: "66", stock: "35", tags: "Design, Canva, Popular", visibility: "show", description: "🎨 Canva Pro lifetime educational team invite link with full premium features.", reviews: "⭐⭐⭐⭐⭐ (12 reviews): Amazing deal for designers!" },
+            { id: "p4", name: "Grammarly Premium", categoryId: "c1", imageText: "GRAM", imageUrl: "https://www.google.com/s2/favicons?domain=grammarly.com&sz=128", price: "150", oldPrice: "400", discount: "62", stock: "12", tags: "Writing, Grammarly", visibility: "show", description: "✍️ Grammarly Premium account for flawless English writing.", reviews: "⭐⭐⭐⭐⭐ (4 reviews): Very helpful tool." },
+            { id: "p5", name: "Midjourney Pro", categoryId: "c1", imageText: "MID", imageUrl: "https://www.google.com/s2/favicons?domain=midjourney.com&sz=128", price: "600", oldPrice: "1500", discount: "60", stock: "8", tags: "AI, Art, Midjourney", visibility: "show", description: "🤖 Midjourney Pro plan for AI image generation.", reviews: "⭐⭐⭐⭐⭐ (9 reviews): Best AI art generator." },
+            { id: "p6", name: "Jasper AI", categoryId: "c1", imageText: "JASP", imageUrl: "https://www.google.com/s2/favicons?domain=jasper.ai&sz=128", price: "400", oldPrice: "1200", discount: "66", stock: "10", tags: "AI, Writing", visibility: "show", description: "📝 Jasper AI copywriting assistant.", reviews: "⭐⭐⭐⭐ (3 reviews): Great for blogs." },
+            { id: "p7", name: "Notion AI", categoryId: "c1", imageText: "NOTN", imageUrl: "https://www.google.com/s2/favicons?domain=notion.so&sz=128", price: "200", oldPrice: "500", discount: "60", stock: "25", tags: "Productivity, Notion", visibility: "show", description: "📓 Notion AI workspace assistant.", reviews: "⭐⭐⭐⭐⭐ (6 reviews): Boosts productivity." },
+            { id: "p8", name: "QuillBot Premium", categoryId: "c1", imageText: "QUIL", imageUrl: "https://www.google.com/s2/favicons?domain=quillbot.com&sz=128", price: "120", oldPrice: "350", discount: "65", stock: "18", tags: "Writing, QuillBot", visibility: "show", description: "🔄 QuillBot paraphrasing tool premium.", reviews: "⭐⭐⭐⭐⭐ (7 reviews): Excellent paraphrasing." },
+            
+            { id: "p9", name: "Netflix Premium 4K", categoryId: "c2", imageText: "NFLX", imageUrl: "https://www.google.com/s2/favicons?domain=netflix.com&sz=128", price: "250", oldPrice: "500", discount: "50", stock: "50", tags: "Streaming, Netflix, 4K", visibility: "show", description: "🍿 Netflix Premium 4K Ultra HD private screen with smooth streaming.", reviews: "⭐⭐⭐⭐⭐ (8 reviews): High quality 4K streaming." },
+            { id: "p10", name: "Amazon Prime Video", categoryId: "c2", imageText: "AMZN", imageUrl: "https://www.google.com/s2/favicons?domain=primevideo.com&sz=128", price: "150", oldPrice: "350", discount: "57", stock: "40", tags: "Streaming, Prime, Flash Sale", visibility: "show", description: "🔥 Amazon Prime Video 6 month Bulk Amount Available ! ✅ Own Mail ✅ Full Account ✅ Bd/ India Both available region ✅ Full Warranty", reviews: "⭐⭐⭐⭐⭐ (2 reviews): Great support and working perfectly." },
+            { id: "p11", name: "YouTube Premium", categoryId: "c2", imageText: "YT", imageUrl: "https://www.google.com/s2/favicons?domain=youtube.com&sz=128", price: "120", oldPrice: "750", discount: "84", stock: "60", tags: "Streaming, YouTube", visibility: "show", description: "▶️ YouTube Premium ad-free music and videos.", reviews: "⭐⭐⭐⭐⭐ (15 reviews): Ad-free experience is awesome." },
+            { id: "p12", name: "Spotify Premium", categoryId: "c2", imageText: "SPOT", imageUrl: "https://www.google.com/s2/favicons?domain=spotify.com&sz=128", price: "130", oldPrice: "300", discount: "56", stock: "30", tags: "Music, Spotify", visibility: "show", description: "🎵 Spotify Premium individual account.", reviews: "⭐⭐⭐⭐⭐ (10 reviews): Unlimited music streaming." },
+            { id: "p13", name: "Disney+ Premium", categoryId: "c2", imageText: "DISN", imageUrl: "https://www.google.com/s2/favicons?domain=disneyplus.com&sz=128", price: "200", oldPrice: "450", discount: "55", stock: "22", tags: "Streaming, Disney", visibility: "show", description: "✨ Disney+ streaming service.", reviews: "⭐⭐⭐⭐ (5 reviews): Great movies." },
+            { id: "p14", name: "Hulu Premium", categoryId: "c2", imageText: "HULU", imageUrl: "https://www.google.com/s2/favicons?domain=hulu.com&sz=128", price: "180", oldPrice: "400", discount: "55", stock: "15", tags: "Streaming, Hulu", visibility: "show", description: "📺 Hulu streaming account.", reviews: "⭐⭐⭐⭐ (3 reviews): Good shows." },
+            { id: "p15", name: "Crunchyroll Mega Fan", categoryId: "c2", imageText: "CRUN", imageUrl: "https://www.google.com/s2/favicons?domain=crunchyroll.com&sz=128", price: "150", oldPrice: "350", discount: "57", stock: "19", tags: "Anime, Crunchyroll", visibility: "show", description: "🍙 Crunchyroll anime streaming.", reviews: "⭐⭐⭐⭐⭐ (7 reviews): Best for anime lovers." },
+            { id: "p16", name: "HBO Max", categoryId: "c2", imageText: "HBO", imageUrl: "https://www.google.com/s2/favicons?domain=max.com&sz=128", price: "220", oldPrice: "500", discount: "56", stock: "25", tags: "Streaming, HBO", visibility: "show", description: "🎬 Max (HBO Max) streaming account.", reviews: "⭐⭐⭐⭐⭐ (6 reviews): Excellent movie collection." },
+            { id: "p17", name: "Apple Music", categoryId: "c2", imageText: "APPL", imageUrl: "https://www.google.com/s2/favicons?domain=music.apple.com&sz=128", price: "140", oldPrice: "300", discount: "53", stock: "30", tags: "Music, Apple", visibility: "show", description: "🎵 Apple Music subscription.", reviews: "⭐⭐⭐⭐⭐ (4 reviews): Lossless audio is great." },
+
+            { id: "p18", name: "LinkedIn Premium", categoryId: "c3", imageText: "LINK", imageUrl: "https://www.google.com/s2/favicons?domain=linkedin.com&sz=128", price: "500", oldPrice: "1500", discount: "66", stock: "10", tags: "Job, LinkedIn", visibility: "show", description: "💼 LinkedIn Career Premium account.", reviews: "⭐⭐⭐⭐⭐ (5 reviews): Helped in job search." },
+            { id: "p19", name: "MoonPay Verified", categoryId: "c3", imageText: "MOON", imageUrl: "https://www.google.com/s2/favicons?domain=moonpay.com&sz=128", price: "800", oldPrice: "2000", discount: "60", stock: "5", tags: "Crypto, Verified", visibility: "show", description: "💳 MoonPay fully verified account.", reviews: "⭐⭐⭐⭐ (2 reviews): Verified successfully." },
+            { id: "p20", name: "PayPal Account", categoryId: "c3", imageText: "PYPL", imageUrl: "https://www.google.com/s2/favicons?domain=paypal.com&sz=128", price: "1000", oldPrice: "2500", discount: "60", stock: "8", tags: "Payment, PayPal", visibility: "show", description: "🌐 US/UK verified PayPal account.", reviews: "⭐⭐⭐⭐⭐ (8 reviews): Works smoothly." },
+            { id: "p21", name: "Binance Verified", categoryId: "c3", imageText: "BINA", imageUrl: "https://www.google.com/s2/favicons?domain=binance.com&sz=128", price: "1200", oldPrice: "3000", discount: "60", stock: "12", tags: "Crypto, Binance", visibility: "show", description: "🪙 Binance verified exchange account.", reviews: "⭐⭐⭐⭐⭐ (6 reviews): Safe and secure." },
+            { id: "p22", name: "Payoneer Account", categoryId: "c3", imageText: "PAYO", imageUrl: "https://www.google.com/s2/favicons?domain=payoneer.com&sz=128", price: "900", oldPrice: "2000", discount: "55", stock: "7", tags: "Payment, Payoneer", visibility: "show", description: "💳 Payoneer verified account with card support.", reviews: "⭐⭐⭐⭐⭐ (4 reviews): Great for freelancers." },
+            { id: "p23", name: "Stripe Verified", categoryId: "c3", imageText: "STRI", imageUrl: "https://www.google.com/s2/favicons?domain=stripe.com&sz=128", price: "1500", oldPrice: "4000", discount: "62", stock: "6", tags: "Payment, Stripe", visibility: "show", description: "💳 Stripe US verified payment gateway account.", reviews: "⭐⭐⭐⭐⭐ (3 reviews): Perfect for e-commerce." },
+            { id: "p24", name: "Wise Account", categoryId: "c3", imageText: "WISE", imageUrl: "https://www.google.com/s2/favicons?domain=wise.com&sz=128", price: "850", oldPrice: "2000", discount: "57", stock: "9", tags: "Payment, Wise", visibility: "show", description: "💱 Wise multi-currency verified account.", reviews: "⭐⭐⭐⭐⭐ (5 reviews): Low exchange fees." },
+            { id: "p25", name: "Upwork Verified", categoryId: "c3", imageText: "UPWK", imageUrl: "https://www.google.com/s2/favicons?domain=upwork.com&sz=128", price: "1100", oldPrice: "2500", discount: "56", stock: "11", tags: "Freelance, Upwork", visibility: "show", description: "👨‍💻 Upwork verified freelancer profile.", reviews: "⭐⭐⭐⭐ (2 reviews): Ready to bid." },
+            { id: "p26", name: "Fiverr Verified", categoryId: "c3", imageText: "FIVR", imageUrl: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=128", price: "700", oldPrice: "1500", discount: "53", stock: "14", tags: "Freelance, Fiverr", visibility: "show", description: "⭐ Fiverr seller account with level 1 badge.", reviews: "⭐⭐⭐⭐⭐ (4 reviews): Good orders flow." },
+
+            { id: "p27", name: "Google Play $10", categoryId: "c4", imageText: "GPLY", imageUrl: "https://www.google.com/s2/favicons?domain=play.google.com&sz=128", price: "1100", oldPrice: "1200", discount: "8", stock: "30", tags: "Gift Card, Google", visibility: "show", description: "🎁 Google Play Store gift card redeem code.", reviews: "⭐⭐⭐⭐⭐ (10 reviews): Instant redeem code received." },
+            { id: "p28", name: "Apple Gift Card $10", categoryId: "c4", imageText: "APPL", imageUrl: "https://www.google.com/s2/favicons?domain=apple.com&sz=128", price: "1150", oldPrice: "1250", discount: "8", stock: "25", tags: "Gift Card, Apple", visibility: "show", description: "🍏 Apple US gift card code.", reviews: "⭐⭐⭐⭐⭐ (7 reviews): Fast delivery." },
+            { id: "p29", name: "Steam Wallet $20", categoryId: "c4", imageText: "STEM", imageUrl: "https://www.google.com/s2/favicons?domain=steampowered.com&sz=128", price: "2200", oldPrice: "2400", discount: "8", stock: "20", tags: "Gaming, Steam", visibility: "show", description: "🎮 Steam wallet code for gaming.", reviews: "⭐⭐⭐⭐⭐ (14 reviews): Added funds successfully." },
+            { id: "p30", name: "Xbox Gift Card $10", categoryId: "c4", imageText: "XBOX", imageUrl: "https://www.google.com/s2/favicons?domain=xbox.com&sz=128", price: "1100", oldPrice: "1200", discount: "8", stock: "15", tags: "Gaming, Xbox", visibility: "show", description: "🎯 Xbox live gift card code.", reviews: "⭐⭐⭐⭐ (3 reviews): Working code." },
+            { id: "p31", name: "PlayStation $10", categoryId: "c4", imageText: "PSN", imageUrl: "https://www.google.com/s2/favicons?domain=playstation.com&sz=128", price: "1100", oldPrice: "1200", discount: "8", stock: "18", tags: "Gaming, PSN", visibility: "show", description: "🎮 PlayStation Network card code.", reviews: "⭐⭐⭐⭐⭐ (5 reviews): Instant code." },
+            { id: "p32", name: "Roblox 1000 Robux", categoryId: "c4", imageText: "RBLX", imageUrl: "https://www.google.com/s2/favicons?domain=roblox.com&sz=128", price: "1200", oldPrice: "1400", discount: "14", stock: "40", tags: "Gaming, Roblox", visibility: "show", description: "🧱 Roblox 1000 Robux gift card.", reviews: "⭐⭐⭐⭐⭐ (8 reviews): Kids loved it." },
+            { id: "p33", name: "Razer Gold $10", categoryId: "c4", imageText: "RAZR", imageUrl: "https://www.google.com/s2/favicons?domain=razer.com&sz=128", price: "1100", oldPrice: "1200", discount: "8", stock: "22", tags: "Gaming, Razer", visibility: "show", description: "🐉 Razer Gold pin code.", reviews: "⭐⭐⭐⭐ (4 reviews): Fast delivery." },
+            { id: "p34", name: "Amazon Gift Card $50", categoryId: "c4", imageText: "AMZN", imageUrl: "https://www.google.com/s2/favicons?domain=amazon.com&sz=128", price: "5500", oldPrice: "6000", discount: "8", stock: "12", tags: "Gift Card, Amazon", visibility: "show", description: "📦 Amazon shopping gift card.", reviews: "⭐⭐⭐⭐⭐ (9 reviews): 100% genuine." },
+
+            { id: "p35", name: "NordVPN 1 Year", categoryId: "c5", imageText: "NORD", imageUrl: "https://www.google.com/s2/favicons?domain=nordvpn.com&sz=128", price: "300", oldPrice: "1200", discount: "75", stock: "30", tags: "VPN, Security", visibility: "show", description: "🛡️ NordVPN 1 year premium subscription account.", reviews: "⭐⭐⭐⭐⭐ (11 reviews): Fast and secure VPN." },
+            { id: "p36", name: "ExpressVPN 1 Year", categoryId: "c5", imageText: "EXPR", imageUrl: "https://www.google.com/s2/favicons?domain=expressvpn.com&sz=128", price: "350", oldPrice: "1500", discount: "76", stock: "25", tags: "VPN, Security", visibility: "show", description: "⚡ ExpressVPN high speed secure connection.", reviews: "⭐⭐⭐⭐⭐ (8 reviews): Best streaming VPN." },
+            { id: "p37", name: "Surfshark VPN", categoryId: "c5", imageText: "SURF", imageUrl: "https://www.google.com/s2/favicons?domain=surfshark.com&sz=128", price: "250", oldPrice: "1000", discount: "75", stock: "28", tags: "VPN, Security", visibility: "show", description: "🦈 Surfshark unlimited devices VPN.", reviews: "⭐⭐⭐⭐⭐ (6 reviews): Works on all devices." },
+            { id: "p38", name: "CyberGhost VPN", categoryId: "c5", imageText: "CYBR", imageUrl: "https://www.google.com/s2/favicons?domain=cyberghostvpn.com&sz=128", price: "200", oldPrice: "900", discount: "77", stock: "20", tags: "VPN, Security", visibility: "show", description: "👻 CyberGhost secure VPN account.", reviews: "⭐⭐⭐⭐ (3 reviews): Good connection." },
+            { id: "p39", name: "Kaspersky Premium", categoryId: "c5", imageText: "KASP", imageUrl: "https://www.google.com/s2/favicons?domain=kaspersky.com&sz=128", price: "400", oldPrice: "1200", discount: "66", stock: "15", tags: "Antivirus, Security", visibility: "show", description: "🔒 Kaspersky antivirus total security key.", reviews: "⭐⭐⭐⭐⭐ (5 reviews): PC is fully protected." },
+            { id: "p40", name: "Bitdefender Total", categoryId: "c5", imageText: "BITD", imageUrl: "https://www.google.com/s2/favicons?domain=bitdefender.com&sz=128", price: "350", oldPrice: "1100", discount: "68", stock: "14", tags: "Antivirus, Security", visibility: "show", description: "🛡️ Bitdefender total security 1 year key.", reviews: "⭐⭐⭐⭐⭐ (4 reviews): Lightweight antivirus." },
+            { id: "p41", name: "Malwarebytes Pro", categoryId: "c5", imageText: "MALW", imageUrl: "https://www.google.com/s2/favicons?domain=malwarebytes.com&sz=128", price: "300", oldPrice: "1000", discount: "70", stock: "18", tags: "Antivirus, Security", visibility: "show", description: "🔍 Malwarebytes premium license key.", reviews: "⭐⭐⭐⭐ (3 reviews): Cleaned all malware." },
+            { id: "p42", name: "IPVanish VPN", categoryId: "c5", imageText: "IPV", imageUrl: "https://www.google.com/s2/favicons?domain=ipvanish.com&sz=128", price: "220", oldPrice: "900", discount: "75", stock: "16", tags: "VPN, Security", visibility: "show", description: "🌐 IPVanish fast VPN account.", reviews: "⭐⭐⭐⭐ (2 reviews): Stable servers." },
+
+            { id: "p43", name: "Windows 11 Pro Key", categoryId: "c6", imageText: "WIN", imageUrl: "https://www.google.com/s2/favicons?domain=microsoft.com&sz=128", price: "350", oldPrice: "1500", discount: "76", stock: "50", tags: "Windows, Microsoft", visibility: "show", description: "💻 Windows 11 Pro lifetime activation license key.", reviews: "⭐⭐⭐⭐⭐ (20 reviews): Activated instantly online." },
+            { id: "p44", name: "Windows 10 Pro Key", categoryId: "c6", imageText: "WIN", imageUrl: "https://www.google.com/s2/favicons?domain=microsoft.com&sz=128", price: "250", oldPrice: "1200", discount: "79", stock: "45", tags: "Windows, Microsoft", visibility: "show", description: "💻 Windows 10 Pro activation key.", reviews: "⭐⭐⭐⭐⭐ (14 reviews): 100% genuine." },
+            { id: "p45", name: "Microsoft Office 365", categoryId: "c6", imageText: "OFFC", imageUrl: "https://www.google.com/s2/favicons?domain=office.com&sz=128", price: "400", oldPrice: "2000", discount: "80", stock: "60", tags: "Office, Microsoft", visibility: "show", description: "📊 MS Office 365 5 devices lifetime account.", reviews: "⭐⭐⭐⭐⭐ (18 reviews): Working perfectly." },
+            { id: "p46", name: "IDM Lifetime Key", categoryId: "c6", imageText: "IDM", imageUrl: "https://www.google.com/s2/favicons?domain=internetdownloadmanager.com&sz=128", price: "600", oldPrice: "1500", discount: "60", stock: "35", tags: "Utility, IDM", visibility: "show", description: "📥 Internet Download Manager official lifetime license.", reviews: "⭐⭐⭐⭐⭐ (9 reviews): Fast downloading speed." },
+            { id: "p47", name: "WinRAR Lifetime", categoryId: "c6", imageText: "RAR", imageUrl: "https://www.google.com/s2/favicons?domain=win-rar.com&sz=128", price: "150", oldPrice: "500", discount: "70", stock: "40", tags: "Utility, WinRAR", visibility: "show", description: "📦 WinRAR official lifetime registration key.", reviews: "⭐⭐⭐⭐ (4 reviews): No more trial popups." },
+            { id: "p48", name: "Adobe CC All Apps", categoryId: "c6", imageText: "ADOB", imageUrl: "https://www.google.com/s2/favicons?domain=adobe.com&sz=128", price: "800", oldPrice: "3000", discount: "73", stock: "12", tags: "Design, Adobe", visibility: "show", description: "🎨 Adobe Creative Cloud all apps 1 year subscription.", reviews: "⭐⭐⭐⭐⭐ (7 reviews): All apps working." },
+
+            { id: "p49", name: "Envato Elements", categoryId: "c7", imageText: "ENVA", imageUrl: "https://www.google.com/s2/favicons?domain=envato.com&sz=128", price: "300", oldPrice: "1000", discount: "70", stock: "20", tags: "Design, Envato", visibility: "show", description: "📥 Envato Elements unlimited downloads account.", reviews: "⭐⭐⭐⭐⭐ (11 reviews): Great graphic assets." },
+            { id: "p50", name: "Udemy Pro", categoryId: "c7", imageText: "UDMY", imageUrl: "https://www.google.com/s2/favicons?domain=udemy.com&sz=128", price: "250", oldPrice: "800", discount: "68", stock: "25", tags: "Education, Udemy", visibility: "show", description: "🎓 Udemy courses access account.", reviews: "⭐⭐⭐⭐ (5 reviews): Learned a lot." },
+            { id: "p51", name: "Freepik Premium", categoryId: "c7", imageText: "FREE", imageUrl: "https://www.google.com/s2/favicons?domain=freepik.com&sz=128", price: "150", oldPrice: "500", discount: "70", stock: "30", tags: "Design, Freepik", visibility: "show", description: "🖼️ Freepik premium vector & photo downloader.", reviews: "⭐⭐⭐⭐⭐ (8 reviews): High quality vectors." },
+            { id: "p52", name: "Skillshare Premium", categoryId: "c7", imageText: "SKIL", imageUrl: "https://www.google.com/s2/favicons?domain=skillshare.com&sz=128", price: "200", oldPrice: "600", discount: "66", stock: "18", tags: "Education, Skillshare", visibility: "show", description: "💡 Skillshare 1 year premium membership.", reviews: "⭐⭐⭐⭐ (4 reviews): Excellent tutorials." },
+            { id: "p53", name: "Coursera Plus", categoryId: "c7", imageText: "COUR", imageUrl: "https://www.google.com/s2/favicons?domain=coursera.org&sz=128", price: "350", oldPrice: "1000", discount: "65", stock: "15", tags: "Education, Coursera", visibility: "show", description: "📜 Coursera Plus verified certificates account.", reviews: "⭐⭐⭐⭐⭐ (6 reviews): Got certified easily." },
+            { id: "p54", name: "GitHub Copilot", categoryId: "c7", imageText: "GITH", imageUrl: "https://www.google.com/s2/favicons?domain=github.com&sz=128", price: "400", oldPrice: "1200", discount: "66", stock: "22", tags: "Coding, GitHub", visibility: "show", description: "⚡ GitHub Copilot AI pair programmer subscription.", reviews: "⭐⭐⭐⭐⭐ (10 reviews): Amazing coding assistant." }
+        ];
+
+        const defaultPaySettings = {
+            bkash: { logo: "https://i.imgur.com/K1LgA0D.png", number: "01332301478", instructions: "To order Kindly complete payment and let us know.\n✓ Make Payment Bkash - 01332301478 (Merchant)\n⚠️ Bkash Personal - সেন্ড মানি করবেন, বিকাশ থেকে Send Money অপশন থেকে Taka পাঠাবেন。" },
+            binance: { logo: "https://i.imgur.com/Qh0Q7Bq.png", id: "123456789", instructions: "Send USDT via Binance Pay to the ID above." }
+        };
+
+        const defaultFooterSettings = {
+            groupText: "Join Group",
+            groupLink: "#",
+            tgText: "Telegram",
+            tgLink: "#",
+            paymentLogos: ["https://i.imgur.com/K1LgA0D.png", "https://i.imgur.com/Qh0Q7Bq.png"]
+        };
+
+        const defaultSideWidgets = [
+            { id: 'sw1', url: 'https://picsum.photos/250/300?random=10', show: 'show', side: 'right', top: '235px', right: '3%', width: '260px', height: '180px', opacity: 1.0 }
+        ];
+
+        const customUserBanners = [
+            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=1200&q=80"
+        ];
+
+        const dbPromise = new Promise((resolve) => { const req = indexedDB.open('eGoodsy_V65', 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore('store'); req.onsuccess = (e) => resolve(e.target.result); });
+        async function setDB(key, val) { const db = await dbPromise; return new Promise(res => { const tx = db.transaction('store', 'readwrite'); tx.objectStore('store').put(val, key); tx.oncomplete = () => res(); }); }
+        async function getDB(key) { const db = await dbPromise; return new Promise(res => { const tx = db.transaction('store', 'readonly'); const req = tx.objectStore('store').get(key); req.onsuccess = () => res(req.result); }); }
+
+        window.onload = async function() {
+            let cats = await getDB(CAT_KEY); if(!cats) { await setDB(CAT_KEY, defaultCats); await setDB(PROD_KEY, defaultProds); }
+            let banners = await getDB(BANNER_KEY); if(!banners || banners.length === 0) { await setDB(BANNER_KEY, customUserBanners); }
+
+            let vidConf = await getDB(VID_CONFIG_KEY);
+            if(!vidConf) {
+                await setDB(VID_CONFIG_KEY, { url: "https://www.w3schools.com/html/mov_bbb.mp4", show: "show", count: 1, dragPerm: "admin", opacity: 1.0 });
+            }
+
+            if(currentUser) {
+                let users = await getDB(USERS_KEY) || [];
+                let u = users.find(x => x.email === currentUser);
+                if(u && u.isBlocked) {
+                    alert("Your account has been blocked by admin!");
+                    localStorage.removeItem('eG_User');
+                    currentUser = null;
+                }
+            }
+
+            checkLandingPageRouting();
+
+            await loadLogo(); await loadNotice(); await loadTopBar(); await loadSideWidgets(); await loadPaymentSettings(); await loadFooterSettings(); await loadVideo(); await renderBanners(); updateAuthUI(); await reloadData(); startTimer();
+        };
+
+        async function checkLandingPageRouting() {
+            let path = window.location.hash.replace('#/', '');
+            if(path && path.startsWith('lp/')) {
+                let slug = path.replace('lp/', '');
+                let landings = await getDB(LANDING_KEY) || [];
+                let page = landings.find(l => l.slug === slug);
+                if(page) {
+                    ['shop-view', 'category-view', 'product-details-view', 'checkout-view', 'user-dashboard', 'admin-panel'].forEach(id => {
+                        let el = document.getElementById(id);
+                        if(el) el.style.display = 'none';
+                    });
+                    let lpView = document.getElementById('landing-page-view');
+                    lpView.style.display = 'block';
+                    lpView.innerHTML = page.code;
+                }
+            }
+        }
+
+        function toggleView(view, categoryId = null) {
+            if(view === 'admin' && !isAdminLoggedIn) { openModal('adminLoginModal'); return; }
+            ['shop-view', 'category-view', 'product-details-view', 'checkout-view', 'user-dashboard', 'admin-panel', 'landing-page-view'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.style.display = 'none';
+            });
+            
+            if(view === 'admin') { document.getElementById('admin-panel').style.display = 'block'; loadAdminOrders(); loadAdminUsersList(); loadAdminLandingsList(); loadAdminWidgetsList(); }
+            else if (view === 'dashboard') { if(!currentUser) return openModal('loginModal'); document.getElementById('user-dashboard').style.display = 'block'; loadUserData(); loadUserOrders(); }
+            else if (view === 'category') { document.getElementById('category-view').style.display = 'block'; openCategoryPage(categoryId); }
+            else if (view === 'product-details') { document.getElementById('product-details-view').style.display = 'block'; }
+            else if (view === 'checkout') { document.getElementById('checkout-view').style.display = 'block'; }
+            else { document.getElementById('shop-view').style.display = 'block'; }
+        }
+
+        function processAdminLogin() {
+            let pass = document.getElementById('adminPass').value; let tfa = document.getElementById('admin2FA').value;
+            if(pass === 'admin123' && tfa === '123456') { isAdminLoggedIn = true; closeModal('adminLoginModal'); document.getElementById('adminPass').value = ''; document.getElementById('admin2FA').value = ''; toggleView('admin'); } else { alert("Incorrect Password or Security Answer!"); }
+        }
+        function logoutAdmin() { isAdminLoggedIn = false; toggleView('shop'); alert("Admin Logged Out Successfully!"); }
+
+        function switchAdminTab(tabId, el) {
+            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active')); document.querySelectorAll('.admin-nav li').forEach(li => li.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active'); if(el) { el.classList.add('active'); document.getElementById('adminSectionTitle').innerText = el.innerText.substring(2).trim(); }
+        }
+
+        async function reloadData() {
+            let cats = await getDB(CAT_KEY) || []; let prods = await getDB(PROD_KEY) || [];
+            let visibleProds = prods.filter(p => !p.visibility || p.visibility === 'show');
+
+            renderHomeCategories(cats); renderAdminCategories(cats); updateCategoryDropdowns(cats);
+            renderProducts(visibleProds, 'homeProductGrid'); 
+            renderProductsByCategories(visibleProds, cats);
+            renderAdminProducts(prods, cats);
+            loadRecentOrdersTable(); 
+        }
+
+        async function handleUserSearch(query) {
+            let prods = await getDB(PROD_KEY) || [];
+            let visibleProds = prods.filter(p => !p.visibility || p.visibility === 'show');
+            let q = query.toLowerCase().trim();
+            if(!q) {
+                renderProducts(visibleProds, 'homeProductGrid');
+                return;
+            }
+            let filtered = visibleProds.filter(p => 
+                p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
+            );
+            renderProducts(filtered, 'homeProductGrid');
+        }
+        function executeUserSearch() {
+            let q = document.getElementById('searchInput').value;
+            handleUserSearch(q);
+        }
+
+        async function filterAdminProductList(query) {
+            let prods = await getDB(PROD_KEY) || [];
+            let cats = await getDB(CAT_KEY) || [];
+            let q = query.toLowerCase().trim();
+            let filtered = prods.filter(p => 
+                p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
+            );
+            renderAdminProductsCustom(filtered, cats);
+        }
+
+        function renderAdminProductsCustom(prods, cats) {
+            let html = ""; 
+            prods.forEach((p, index) => { 
+                let catName = cats.find(c => c.id === p.categoryId)?.name || "Unknown"; 
+                let imgHtml = p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%; height:100%; object-fit:contain; padding:2px;">` : "Img"; 
+                let statusText = (p.visibility === 'hide') ? `<span style="color:red; font-weight:bold;">Hidden</span>` : `<span style="color:green; font-weight:bold;">Visible</span>`;
+                html += `<tr><td style="width:40px; text-align:center;"><div style="width:25px; height:25px; border-radius:50%; background:#eee; display:inline-flex; align-items:center; justify-content:center; overflow:hidden; font-size:10px;">${imgHtml}</div></td><td>${p.name}</td><td>${catName}</td><td>৳ ${p.price}</td><td><small>${p.tags || '-'}</small></td><td><b>${p.stock || 10}</b></td><td>${statusText}</td><td><button class="btn-edit" onclick="openProdEditModal(${index})">Edit</button> <button class="btn-delete" onclick="deleteProduct(${index})">Delete</button></td></tr>`; 
+            }); 
+            document.getElementById('adminProductList').innerHTML = html;
+        }
+
+        function updateAuthUI() { let authSec = document.getElementById('authSection'); if(currentUser) { authSec.innerHTML = `<span id="cartCount">🛒 ${cartTotal} Items</span> <span style="color:#2ecc71;">👤 ${currentUser.split('@')[0]}</span> <button class="btn-primary" onclick="toggleView('dashboard')">My Dashboard</button> <a class="admin-btn" onclick="toggleView('admin')">⚙️ Admin</a>`; } else { authSec.innerHTML = `<span id="cartCount">🛒 ${cartTotal} Items</span> <button class="btn-primary" onclick="openModal('loginModal')">👤 Login</button> <a class="admin-btn" onclick="toggleView('admin')">⚙️ Admin</a>`; } }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            let title = document.getElementById('authModalTitle');
+            let sub = document.getElementById('authModalSub');
+            let btn = document.getElementById('authSubmitBtn');
+            let tabLogin = document.getElementById('tabLogin');
+            let tabSignup = document.getElementById('tabSignup');
+
+            if(mode === 'login') {
+                title.innerText = "Welcome Back";
+                sub.innerText = "Login with your email and password";
+                btn.innerText = "Login";
+                tabLogin.classList.add('active');
+                tabSignup.classList.remove('active');
+            } else {
+                title.innerText = "Create Account";
+                sub.innerText = "Sign up with your email and password";
+                btn.innerText = "Sign Up";
+                tabSignup.classList.add('active');
+                tabLogin.classList.remove('active');
+            }
+        }
+
+        async function processAuth() {
+            let email = document.getElementById('authEmail').value.trim();
+            let pass = document.getElementById('authPassword').value.trim();
+
+            if(!email || !email.includes('@') || !pass) {
+                alert("Please enter a valid email and password!");
+                return;
+            }
+
+            let users = await getDB(USERS_KEY) || [];
+
+            if(authMode === 'signup') {
+                let existing = users.find(u => u.email === email);
+                if(existing) {
+                    alert("This email is already registered! Please login.");
+                    switchAuthMode('login');
+                    return;
+                }
+                let newUser = {
+                    email: email,
+                    password: pass,
+                    avatar: "",
+                    isBlocked: false,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                users.push(newUser);
+                await setDB(USERS_KEY, users);
+                
+                localStorage.setItem('eG_User', email);
+                currentUser = email;
+                updateAuthUI();
+                closeModal('loginModal');
+                document.getElementById('authEmail').value = "";
+                document.getElementById('authPassword').value = "";
+                showSuccess("Sign Up Successful!", "Your account has been created successfully.");
+            } else {
+                let user = users.find(u => u.email === email && u.password === pass);
+                if(!user) {
+                    alert("Incorrect email or password! Please check your credentials.");
+                    return;
+                }
+                if(user.isBlocked) {
+                    alert("Your account has been blocked by admin!");
+                    return;
+                }
+                localStorage.setItem('eG_User', email);
+                currentUser = email;
+                updateAuthUI();
+                closeModal('loginModal');
+                document.getElementById('authEmail').value = "";
+                document.getElementById('authPassword').value = "";
+                showSuccess("Login Successful", "Welcome back to টপ বাই সেল!");
+            }
+        }
+
+        async function loadUserData() {
+            if(!currentUser) return;
+            document.getElementById('dashboardUserEmail').innerText = currentUser;
+            let users = await getDB(USERS_KEY) || [];
+            let user = users.find(u => u.email === currentUser);
+            let avatarBox = document.getElementById('userAvatarBox');
+            if(user && user.avatar) {
+                avatarBox.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; object-fit:cover;">`;
+            } else {
+                avatarBox.innerHTML = "👤";
+            }
+        }
+
+        async function updateUserAvatar(input) {
+            if(input.files && input.files[0] && currentUser) {
+                let compressedImg = await compressImage(input.files[0], 250);
+                let users = await getDB(USERS_KEY) || [];
+                let idx = users.findIndex(u => u.email === currentUser);
+                if(idx !== -1) {
+                    users[idx].avatar = compressedImg;
+                } else {
+                    users.push({ email: currentUser, password: "", avatar: compressedImg, isBlocked: false, date: new Date().toISOString().split('T')[0] });
+                }
+                await setDB(USERS_KEY, users);
+                loadUserData();
+                alert("Profile Picture Updated Successfully!");
+            }
+        }
+
+        async function loadAdminUsersList() {
+            let users = await getDB(USERS_KEY) || [];
+            let tbody = document.getElementById('adminUsersListBody');
+            tbody.innerHTML = "";
+            if(users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No registered users yet.</td></tr>`;
+                return;
+            }
+            users.forEach((u, index) => {
+                let avHtml = u.avatar ? `<img src="${u.avatar}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">` : "👤";
+                let blockBtnText = u.isBlocked ? "Unblock" : "Block";
+                let blockBtnColor = u.isBlocked ? "#2ecc71" : "#e67e22";
+                let statusText = u.isBlocked ? `<span style="color:red; font-weight:bold;">Blocked</span>` : `<span style="color:green; font-weight:bold;">Active</span>`;
+                
+                tbody.innerHTML += `<tr><td style="text-align:center;">${avHtml}</td><td><b>${u.email}</b></td><td><code>${u.password}</code></td><td>${statusText}</td><td><button class="btn-edit" style="background:${blockBtnColor};" onclick="toggleBlockUser(${index})">${blockBtnText}</button> <button class="btn-delete" onclick="deleteUser(${index})">Delete</button></td></tr>`;
+            });
+        }
+
+        async function toggleBlockUser(index) {
+            let users = await getDB(USERS_KEY) || [];
+            users[index].isBlocked = !users[index].isBlocked;
+            await setDB(USERS_KEY, users);
+            loadAdminUsersList();
+            alert("User status updated!");
+        }
+
+        async function deleteUser(index) {
+            if(confirm("Are you sure you want to delete this user?")) {
+                let users = await getDB(USERS_KEY) || [];
+                users.splice(index, 1);
+                await setDB(USERS_KEY, users);
+                loadAdminUsersList();
+                alert("User deleted successfully!");
+            }
+        }
+
+        async function saveLandingPage() {
+            let title = document.getElementById('lpTitle').value.trim();
+            let slug = document.getElementById('lpSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+            let code = document.getElementById('lpCode').value.trim();
+            let fileInput = document.getElementById('lpFile');
+
+            if(!title || !slug) {
+                alert("Please provide Title and Slug!");
+                return;
+            }
+
+            if(fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = async (e) => {
+                    let fileContent = e.target.result;
+                    await storeAndPublishLanding(title, slug, fileContent);
+                };
+                reader.readAsText(fileInput.files[0]);
+            } else if(code) {
+                await storeAndPublishLanding(title, slug, code);
+            } else {
+                alert("Please paste HTML code or upload an HTML file!");
+            }
+        }
+
+        async function storeAndPublishLanding(title, slug, code) {
+            let landings = await getDB(LANDING_KEY) || [];
+            let existingIdx = landings.findIndex(l => l.slug === slug);
+            let newPage = { title, slug, code };
+            if(existingIdx !== -1) {
+                landings[existingIdx] = newPage;
+            } else {
+                landings.push(newPage);
+            }
+            await setDB(LANDING_KEY, landings);
+            document.getElementById('lpTitle').value = "";
+            document.getElementById('lpSlug').value = "";
+            document.getElementById('lpCode').value = "";
+            document.getElementById('lpFile').value = "";
+            loadAdminLandingsList();
+            alert(`Landing page created successfully! URL: #${slug}`);
+        }
+
+        async function loadAdminLandingsList() {
+            let landings = await getDB(LANDING_KEY) || [];
+            let tbody = document.getElementById('adminLandingListBody');
+            tbody.innerHTML = "";
+            if(landings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No landing pages created.</td></tr>`;
+                return;
+            }
+            landings.forEach((l, index) => {
+                let fullUrl = window.location.origin + window.location.pathname + '#/lp/' + l.slug;
+                tbody.innerHTML += `<tr><td><b>${l.title}</b></td><td><a href="#/lp/${l.slug}" target="_blank" style="color:#2ecc71;">${fullUrl}</a></td><td><button class="btn-delete" onclick="deleteLandingPage(${index})">Delete</button></td></tr>`;
+            });
+        }
+
+        async function deleteLandingPage(index) {
+            if(confirm("Delete this landing page?")) {
+                let landings = await getDB(LANDING_KEY) || [];
+                landings.splice(index, 1);
+                await setDB(LANDING_KEY, landings);
+                loadAdminLandingsList();
+            }
+        }
+
+        function logout() { localStorage.removeItem('eG_User'); currentUser = null; updateAuthUI(); toggleView('shop'); }
+
+        async function loadNotice() { let notice = await getDB(NOTICE_KEY); if(notice) document.getElementById('displayNotice').innerText = "📢 " + notice; }
+        async function updateNotice() { let noticeTxt = document.getElementById('adminNoticeInput').value; if(noticeTxt) { await setDB(NOTICE_KEY, noticeTxt); await loadNotice(); alert("Notice Updated Successfully!"); document.getElementById('adminNoticeInput').value = ''; } }
+
+        async function loadSideWidgets() {
+            let widgets = await getDB(SIDE_WIDGETS_KEY);
+            if(!widgets) { widgets = defaultSideWidgets; await setDB(SIDE_WIDGETS_KEY, widgets); }
+            
+            let wrapper = document.getElementById('sideWidgetsWrapper');
+            wrapper.innerHTML = "";
+
+            widgets.forEach((w, index) => {
+                if(w.show === "show") {
+                    let div = document.createElement('div');
+                    div.className = 'floating-widget';
+                    div.id = 'sideWidget_' + index;
+                    div.style.display = 'block';
+                    div.style.top = w.top || '235px';
+                    if(w.side === 'left') { div.style.left = w.left || '20px'; div.style.right = 'auto'; }
+                    else { div.style.right = w.right || '3%'; div.style.left = 'auto'; }
+                    div.style.width = w.width || '260px';
+                    div.style.height = w.height || '180px';
+                    div.style.opacity = w.opacity !== undefined ? w.opacity : 1.0;
+
+                    let handleHTML = `<div class="widget-drag-handle" onmousedown="startWidgetDragging(event, ${index})">DRAG / MOVE ✥</div>`;
+                    let contentHTML = (w.url && (w.url.includes('.mp4') || w.url.includes('.webm') || w.url.startsWith('data:video'))) ? `<video src="${w.url}" autoplay loop muted playsinline></video>` : `<img src="${w.url}" alt="Ad Widget">`;
+
+                    div.innerHTML = handleHTML + contentHTML;
+                    wrapper.appendChild(div);
+                }
+            });
+        }
+
+        async function saveSideWidgetSettings() {
+            let fileInput = document.getElementById('adminSideWidgetInput');
+            let show = document.getElementById('adminSideWidgetShow').value;
+            let side = document.getElementById('adminSideWidgetSide').value;
+            let opacity = parseFloat(document.getElementById('adminSideWidgetOpacity').value) || 1.0;
+
+            let widgets = await getDB(SIDE_WIDGETS_KEY) || defaultSideWidgets;
+
+            if (fileInput.files && fileInput.files[0]) {
+                let file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    let newWidget = {
+                        id: 'sw_' + Date.now(),
+                        url: e.target.result,
+                        show: show,
+                        side: side,
+                        top: '235px',
+                        right: side === 'right' ? '3%' : 'auto',
+                        left: side === 'left' ? '20px' : 'auto',
+                        width: '260px',
+                        height: '180px',
+                        opacity: opacity
+                    };
+                    widgets.push(newWidget);
+                    await setDB(SIDE_WIDGETS_KEY, widgets);
+                    await loadSideWidgets();
+                    loadAdminWidgetsList();
+                    alert("Side Widget Added Successfully!");
+                    fileInput.value = "";
+                };
+                reader.readAsDataURL(file);
+            } else {
+                if(widgets.length > 0) {
+                    widgets[widgets.length - 1].show = show;
+                    widgets[widgets.length - 1].side = side;
+                    widgets[widgets.length - 1].opacity = opacity;
+                    await setDB(SIDE_WIDGETS_KEY, widgets);
+                }
+                await loadSideWidgets();
+                loadAdminWidgetsList();
+                alert("Side Widget Settings Updated Successfully!");
+            }
+        }
+
+        async function loadAdminWidgetsList() {
+            let widgets = await getDB(SIDE_WIDGETS_KEY) || defaultSideWidgets;
+            let container = document.getElementById('adminWidgetsListContainer');
+            container.innerHTML = "";
+            widgets.forEach((w, index) => {
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; padding:8px 12px; border:1px solid #ddd; border-radius:5px; margin-bottom:8px;">
+                        <span>Widget #${index+1} (${w.side.toUpperCase()}) - <b>${w.show}</b> (Op: ${w.opacity || 1.0})</span>
+                        <div>
+                            <button class="btn-edit" onclick="toggleWidgetStatus(${index})">Toggle Show/Hide</button>
+                            <button class="btn-delete" onclick="deleteWidget(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function toggleWidgetStatus(index) {
+            let widgets = await getDB(SIDE_WIDGETS_KEY) || defaultSideWidgets;
+            widgets[index].show = widgets[index].show === 'show' ? 'hide' : 'show';
+            await setDB(SIDE_WIDGETS_KEY, widgets);
+            await loadSideWidgets();
+            loadAdminWidgetsList();
+        }
+
+        async function deleteWidget(index) {
+            let widgets = await getDB(SIDE_WIDGETS_KEY) || defaultSideWidgets;
+            widgets.splice(index, 1);
+            await setDB(SIDE_WIDGETS_KEY, widgets);
+            await loadSideWidgets();
+            loadAdminWidgetsList();
+        }
+
+        let activeWidgetEl = null, wDragStartX = 0, wDragStartY = 0, wInitialX = 0, wInitialY = 0;
+        function startWidgetDragging(e, index) {
+            activeWidgetEl = document.getElementById('sideWidget_' + index);
+            if(!activeWidgetEl) return;
+            isWidgetDragging = true;
+            wDragStartX = e.clientX; wDragStartY = e.clientY;
+            let rect = activeWidgetEl.getBoundingClientRect();
+            wInitialX = rect.left; wInitialY = rect.top;
+            
+            document.addEventListener('mousemove', onWidgetMouseMove);
+            document.addEventListener('mouseup', onWidgetMouseUp);
+        }
+        let isWidgetDragging = false;
+        function onWidgetMouseMove(e) {
+            if (!isWidgetDragging || !activeWidgetEl) return;
+            let dx = e.clientX - wDragStartX; let dy = e.clientY - wDragStartY;
+            activeWidgetEl.style.left = (wInitialX + dx) + 'px';
+            activeWidgetEl.style.top = (wInitialY + dy) + 'px';
+            activeWidgetEl.style.right = 'auto';
+        }
+        function onWidgetMouseUp() {
+            isWidgetDragging = false; activeWidgetEl = null;
+            document.removeEventListener('mousemove', onWidgetMouseMove);
+            document.removeEventListener('mouseup', onWidgetMouseUp);
+        }
+
+        async function loadTopBar() {}
+        async function saveTopBarSettings() {}
+
+        async function loadFooterSettings() {
+            let footerSet = await getDB(FOOTER_KEY);
+            if(!footerSet) { footerSet = defaultFooterSettings; await setDB(FOOTER_KEY, footerSet); }
+            
+            document.getElementById('adminGroupText').value = footerSet.groupText;
+            document.getElementById('adminGroupLink').value = footerSet.groupLink;
+            document.getElementById('adminTgText').value = footerSet.tgText;
+            document.getElementById('adminTgLink').value = footerSet.tgLink;
+
+            let groupBtn = document.getElementById('footerGroupBtn');
+            let tgBtn = document.getElementById('footerTgBtn');
+            groupBtn.innerText = footerSet.groupText;
+            groupBtn.onclick = () => window.open(footerSet.groupLink, '_blank');
+            tgBtn.innerText = footerSet.tgText;
+            tgBtn.onclick = () => window.open(footerSet.tgLink, '_blank');
+
+            let iconsContainer = document.getElementById('footerPaymentIcons');
+            iconsContainer.innerHTML = "";
+            footerSet.paymentLogos.forEach(src => {
+                iconsContainer.innerHTML += `<img src="${src}" alt="Payment Logo">`;
+            });
+        }
+
+        async function saveFooterSettings() {
+            let footerSet = await getDB(FOOTER_KEY) || defaultFooterSettings;
+            footerSet.groupText = document.getElementById('adminGroupText').value;
+            footerSet.groupLink = document.getElementById('adminGroupLink').value;
+            footerSet.tgText = document.getElementById('adminTgText').value;
+            footerSet.tgLink = document.getElementById('adminTgLink').value;
+
+            let filesInput = document.getElementById('adminPayLogosInput');
+            if(filesInput.files && filesInput.files.length > 0) {
+                let newLogos = [];
+                for(let i=0; i<filesInput.files.length; i++) {
+                    let compressed = await compressImage(filesInput.files[i], 300);
+                    newLogos.push(compressed);
+                }
+                footerSet.paymentLogos = newLogos;
+            }
+
+            await setDB(FOOTER_KEY, footerSet);
+            await loadFooterSettings();
+            alert("Footer Settings Updated Successfully!");
+            filesInput.value = "";
+        }
+
+        async function loadVideo() {
+            let config = await getDB(VID_CONFIG_KEY) || { url: "https://www.w3schools.com/html/mov_bbb.mp4", show: "show", count: 1, dragPerm: "admin", opacity: 1.0 };
+            let wrapper = document.getElementById('videoPlayersWrapper'); 
+            wrapper.innerHTML = "";
+            
+            if(config.show === "hide") return;
+
+            for (let i = 0; i < config.count; i++) {
+                let div = document.createElement('div'); 
+                div.className = 'floating-video'; 
+                div.id = 'floatingVid_' + i;
+                div.style.display = 'block';
+                div.style.width = '260px'; 
+                div.style.height = '180px'; 
+                div.style.right = '3%'; 
+                div.style.top = '30px'; 
+                div.style.opacity = config.opacity !== undefined ? config.opacity : 1.0;
+                
+                let handleHTML = (isAdminLoggedIn || config.dragPerm === "all") ? `<div class="video-drag-handle" style="display:block;" onmousedown="startDragging(event, ${i})">DRAG ME ✥</div>` : ``;
+                
+                let videoSrc = config.url ? config.url : "";
+                div.innerHTML = `${handleHTML}<video src="${videoSrc}" autoplay loop muted playsinline controls></video>`;
+                wrapper.appendChild(div);
+            }
+            
+            document.getElementById('adminVideoShow').value = config.show;
+            document.getElementById('adminVideoCount').value = config.count;
+            document.getElementById('adminVideoDragPerm').value = config.dragPerm;
+            if(document.getElementById('adminVideoOpacity')) {
+                document.getElementById('adminVideoOpacity').value = config.opacity !== undefined ? config.opacity : 1.0;
+            }
+        }
+
+        async function saveVideoSettings() {
+            let show = document.getElementById('adminVideoShow').value;
+            let count = parseInt(document.getElementById('adminVideoCount').value) || 1;
+            let dragPerm = document.getElementById('adminVideoDragPerm').value;
+            let opacity = parseFloat(document.getElementById('adminVideoOpacity').value) || 1.0;
+            let fileInput = document.getElementById('adminVideoInput');
+
+            let oldConfig = await getDB(VID_CONFIG_KEY) || { url: "https://www.w3schools.com/html/mov_bbb.mp4" }; 
+            let videoUrl = oldConfig.url;
+
+            if (fileInput.files && fileInput.files[0]) {
+                let file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = async (e) => { 
+                    videoUrl = e.target.result; 
+                    await setDB(VID_CONFIG_KEY, { url: videoUrl, show, count, dragPerm, opacity }); 
+                    await loadVideo(); 
+                    alert("Video Saved & Updated!"); 
+                    fileInput.value = ""; 
+                };
+                reader.readAsDataURL(file);
+            } else { 
+                await setDB(VID_CONFIG_KEY, { url: videoUrl, show, count, dragPerm, opacity }); 
+                await loadVideo(); 
+                alert("Video Settings Saved!"); 
+            }
+        }
+
+        let activeDragEl = null, dragStartX = 0, dragStartY = 0, initialX = 0, initialY = 0;
+        function startDragging(e, index) {
+            getDB(VID_CONFIG_KEY).then(cfg => {
+                let config = cfg || { dragPerm: "admin" };
+                if (!isAdminLoggedIn && config.dragPerm !== "all") return;
+                activeDragEl = document.getElementById('floatingVid_' + index); if(!activeDragEl) return;
+                isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY;
+                let rect = activeDragEl.getBoundingClientRect(); initialX = rect.left; initialY = rect.top;
+                document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp);
+            });
+        }
+        let isDragging = false;
+        function onMouseMove(e) {
+            if (!isDragging || !activeDragEl) return;
+            let dx = e.clientX - dragStartX; let dy = e.clientY - dragStartY;
+            activeDragEl.style.left = (initialX + dx) + 'px';
+            activeDragEl.style.top = (initialY + dy) + 'px';
+            activeDragEl.style.right = 'auto'; activeDragEl.style.bottom = 'auto';
+        }
+        function onMouseUp() { isDragging = false; activeDragEl = null; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }
+
+        async function loadPaymentSettings() { let sets = await getDB(PAY_SET_KEY); if(!sets) { sets = defaultPaySettings; await setDB(PAY_SET_KEY, sets); } currentPaySettings = sets; document.getElementById('adminBkashNumber').value = sets.bkash.number; document.getElementById('adminBkashInst').value = sets.bkash.instructions; document.getElementById('adminBinanceId').value = sets.binance.id; document.getElementById('adminBinanceInst').value = sets.binance.instructions; document.getElementById('chkBkashLogo').src = sets.bkash.logo; document.getElementById('chkBinanceLogo').src = sets.binance.logo; selectPayment(selectedPaymentMethod); }
+        async function savePaymentSettings() { let sets = { ...currentPaySettings }; sets.bkash.number = document.getElementById('adminBkashNumber').value; sets.bkash.instructions = document.getElementById('adminBkashInst').value; sets.binance.id = document.getElementById('adminBinanceId').value; sets.binance.instructions = document.getElementById('adminBinanceInst').value; let bk = document.getElementById('adminBkashLogo').files[0]; if(bk) sets.bkash.logo = await compressImage(bk, 300); let bn = document.getElementById('adminBinanceLogo').files[0]; if(bn) sets.binance.logo = await compressImage(bn, 300); await setDB(PAY_SET_KEY, sets); await loadPaymentSettings(); alert("Settings Updated!"); }
+        function selectPayment(method) { selectedPaymentMethod = method; document.getElementById('payBkash').classList.remove('active'); document.getElementById('payBinance').classList.remove('active'); document.getElementById('pay' + method).classList.add('active'); let instBox = document.getElementById('payInstBox'); if(method === 'Bkash') { let formattedInst = currentPaySettings.bkash.instructions.replace(/\n/g, '<br>'); instBox.innerHTML = `<h4><img src="${currentPaySettings.bkash.logo}" style="height: 20px;"> ${currentPaySettings.bkash.number} 📋</h4><p>${formattedInst}</p>`; document.getElementById('chkPayNumber').placeholder = "Your Account Number*"; } else { let formattedInst = currentPaySettings.binance.instructions.replace(/\n/g, '<br>'); instBox.innerHTML = `<h4><img src="${currentPaySettings.binance.logo}" style="height: 20px;"> Binance Pay ID: ${currentPaySettings.binance.id} 📋</h4><p>${formattedInst}</p>`; document.getElementById('chkPayNumber').placeholder = "Your Binance Pay ID*"; } }
+
+        async function openProductDetails(prodStr) {
+            let p = JSON.parse(decodeURIComponent(prodStr));
+            currentPdpProd = p; pdpQty = 1;
+            document.getElementById('pdpTitle').innerText = p.name;
+            document.getElementById('pdpPrice').innerText = p.price;
+            document.getElementById('pdpOldPrice').innerText = p.oldPrice;
+            document.getElementById('pdpImgBox').innerHTML = p.imageUrl ? `<img id="pdpZoomImg" src="${p.imageUrl}">` : `<span style="font-size:24px; color:#aaa;">${p.imageText || 'Img'}</span>`;
+            document.getElementById('pdpQtyVal').value = 1;
+
+            document.getElementById('pdpTabContent').innerText = p.description || "No Description available for this product.";
+            window.currentPdpReviews = p.reviews || "No reviews yet.";
+            document.getElementById('pdpTags').innerText = p.tags || "-";
+
+            let cats = await getDB(CAT_KEY) || [];
+            let catObj = cats.find(c => c.id === p.categoryId);
+            document.getElementById('pdpCatName').innerText = catObj ? catObj.name : "Subscriptions";
+
+            let sbHtml = "";
+            cats.forEach(c => {
+                sbHtml += `<div class="pdp-cat-link" onclick="toggleView('category', '${c.id}')"><img src="${c.iconUrl || 'https://www.google.com/s2/favicons?domain=openai.com&sz=128'}">${c.name}</div>`;
+            });
+            document.getElementById('pdpSidebarCategories').innerHTML = sbHtml;
+
+            let allProds = await getDB(PROD_KEY) || [];
+            let relProds = allProds.filter(prod => prod.categoryId === p.categoryId && prod.id !== p.id && (!prod.visibility || prod.visibility === 'show')).slice(0, 2);
+            if(relProds.length === 0) {
+                relProds = allProds.filter(prod => prod.id !== p.id && (!prod.visibility || prod.visibility === 'show')).slice(0, 2);
+            }
+            let relHtml = "";
+            relProds.forEach(rp => {
+                let rpStr = encodeURIComponent(JSON.stringify(rp));
+                let rpImg = rp.imageUrl || "https://www.google.com/s2/favicons?domain=openai.com&sz=128";
+                relHtml += `<div class="related-prod-item" onclick="openProductDetails('${rpStr}')"><img src="${rpImg}" alt="Rel"> <div class="related-info"><h5>${rp.name}</h5><div class="rel-price">৳ ${rp.price}</div><div style="color:#f39c12; font-size:10px;">☆☆☆☆☆</div></div></div>`;
+            });
+            document.getElementById('pdpRelatedProductsContainer').innerHTML = relHtml || "<p style='font-size:12px; color:#777;'>No related products.</p>";
+
+            toggleView('product-details');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function zoomProductImg(e) {
+            let box = document.getElementById('pdpImgBox');
+            let img = document.getElementById('pdpZoomImg');
+            if(!img) return;
+            let rect = box.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            let xPercent = (x / box.offsetWidth) * 100;
+            let yPercent = (y / box.offsetHeight) * 100;
+            img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+            img.style.transform = "scale(1.8)";
+        }
+
+        function resetProductZoom() {
+            let img = document.getElementById('pdpZoomImg');
+            if(!img) return;
+            img.style.transformOrigin = "center center";
+            img.style.transform = "scale(1)";
+        }
+
+        function switchPdpTab(tab) {
+            let content = document.getElementById('pdpTabContent');
+            let descBtn = document.getElementById('tabDescBtn');
+            let revBtn = document.getElementById('tabRevBtn');
+            if(tab === 'desc') {
+                content.innerText = currentPdpProd.description || "No Description available.";
+                descBtn.classList.remove('inactive'); descBtn.style.color = "#2ecc71"; descBtn.style.borderBottom = "2px solid #2ecc71";
+                revBtn.classList.add('inactive'); revBtn.style.color = "#777"; revBtn.style.borderBottom = "none";
+            } else {
+                content.innerText = window.currentPdpReviews || "No reviews available.";
+                revBtn.classList.remove('inactive'); revBtn.style.color = "#2ecc71"; revBtn.style.borderBottom = "2px solid #2ecc71";
+                descBtn.classList.add('inactive'); descBtn.style.color = "#777"; descBtn.style.borderBottom = "none";
+            }
+        }
+
+        function selectPdpOpt(optName, element) {
+            let pills = document.querySelectorAll('.pdp-opt-pill');
+            pills.forEach(p => p.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function changePdpQty(val) {
+            pdpQty += val;
+            if(pdpQty < 1) pdpQty = 1;
+            document.getElementById('pdpQtyVal').value = pdpQty;
+        }
+
+        function pdpAddToCart() {
+            cartTotal += pdpQty;
+            updateAuthUI();
+            showSuccess("Added to Cart!", `${currentPdpProd.name} added successfully.`);
+        }
+
+        function pdpBuyNow() {
+            qvCurrentProd = currentPdpProd;
+            qvSelectedOpt = "Private Screen 1M";
+            qvCurrentQty = pdpQty;
+            document.getElementById('chkEmail').value = currentUser || '';
+            document.getElementById('chkItemName').innerText = currentPdpProd.name;
+            document.getElementById('chkItemOpt').innerText = qvSelectedOpt;
+            document.getElementById('chkItemQty').innerText = pdpQty;
+            let subTotal = parseInt(currentPdpProd.price) * pdpQty;
+            let oldTotal = parseInt(currentPdpProd.oldPrice) * pdpQty;
+            document.getElementById('chkItemPrice').innerText = subTotal;
+            document.getElementById('chkSubTotal').innerText = oldTotal;
+            document.getElementById('chkDiscount').innerText = oldTotal - subTotal;
+            document.getElementById('chkGrandTotal').innerText = subTotal;
+            document.getElementById('chkItemImg').innerHTML = currentPdpProd.imageUrl ? `<img src="${currentPdpProd.imageUrl}">` : "Img";
+            toggleView('checkout');
+        }
+
+        async function confirmCheckoutOrder() {
+            let name = document.getElementById('chkName').value, phone = document.getElementById('chkPhone').value, email = document.getElementById('chkEmail').value, note = document.getElementById('chkNote').value, payNumber = document.getElementById('chkPayNumber').value, trxId = document.getElementById('chkTrxId').value;
+            if(!name || !phone || !email || !payNumber || !trxId) return alert("Fill all required fields (*)");
+            let finalPrice = parseInt(currentPdpProd.price) * pdpQty; let finalOrderName = `${currentPdpProd.name} (Qty: ${pdpQty})`;
+            let orders = await getDB(ORDERS_KEY) || []; 
+            let newOrd = { orderId: "ORD-" + Math.floor(Math.random()*90000+10000), userEmail: email, fullName: name, phone: phone, paymentMethod: selectedPaymentMethod, paymentNumber: payNumber, trxId: trxId, orderNote: note, productId: currentPdpProd.id, productName: finalOrderName, price: finalPrice, status: "Pending", deliveryDetails: "", date: new Date().toISOString().split('T')[0] };
+            orders.push(newOrd); await setDB(ORDERS_KEY, orders);
+            document.getElementById('chkName').value = ""; document.getElementById('chkPhone').value = ""; document.getElementById('chkPayNumber').value = ""; document.getElementById('chkTrxId').value = ""; document.getElementById('chkNote').value = ""; toggleView('shop'); showSuccess("Order Confirmed!", `Thank you <b>${name}</b>. Your order is processing.`);
+            loadRecentOrdersTable();
+        }
+
+        function closeSuccessAndGoHome() {
+            closeModal('actionSuccessModal');
+            toggleView('shop');
+        }
+
+        function getIconHTML(cat) { return cat.iconUrl ? `<img src="${cat.iconUrl}">` : cat.name.substring(0,2).toUpperCase(); }
+        function renderHomeCategories(cats) { let html = ""; cats.forEach(c => { html += `<div class="category-card" onclick="toggleView('category', '${c.id}')"><div class="category-icon">${getIconHTML(c)}</div><div class="category-title">${c.name}</div></div>`; }); document.getElementById('homeCategories').innerHTML = html; }
+        
+        async function openCategoryPage(activeCatId) { 
+            let cats = await getDB(CAT_KEY) || []; let prods = await getDB(PROD_KEY) || []; 
+            let visibleProds = prods.filter(p => !p.visibility || p.visibility === 'show');
+            if(!activeCatId && cats.length > 0) activeCatId = cats[0].id;
+            let sidebarHtml = ""; cats.forEach(c => { let activeClass = (c.id === activeCatId) ? "active" : ""; sidebarHtml += `<div class="sidebar-item ${activeClass}" onclick="openCategoryPage('${c.id}')"><div class="sidebar-item-content"><div class="sidebar-item-icon">${getIconHTML(c)}</div>${c.name}</div><span>❯</span></div>`; }); 
+            document.getElementById('sidebarCategoriesList').innerHTML = sidebarHtml; renderProducts(visibleProds.filter(p => p.categoryId === activeCatId), 'categoryProductGrid'); 
+        }
+
+        function renderProducts(products, targetId) { 
+            let grid = document.getElementById(targetId); grid.innerHTML = ""; if(products.length === 0) return grid.innerHTML = "<p style='grid-column: span 4; padding: 20px;'>No products found.</p>"; 
+            products.forEach(p => { 
+                let imgHtml = p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : (p.imageText || "Img"); let pStr = encodeURIComponent(JSON.stringify(p)); 
+                let discountBadge = (p.discount && parseInt(p.discount) > 0) ? `<span class="discount-badge">${p.discount}% OFF</span>` : ``;
+                let stockBadge = `<span class="stock-badge">Stock: ${p.stock || '10'}</span>`;
+                
+                let card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `${discountBadge}${stockBadge}<div class="product-img">${imgHtml}</div><h4>${p.name}</h4><div class="price">৳ ${p.price} <span class="old-price">৳ ${p.oldPrice}</span></div><button class="btn-buy" onclick="event.stopPropagation(); openProductDetails('${pStr}')">Buy Now</button><button class="btn-cart" onclick="event.stopPropagation(); openProductDetails('${pStr}')">Add to cart</button>`;
+                card.onclick = () => openProductDetails(pStr);
+                grid.appendChild(card);
+            }); 
+        }
+
+        function renderProductsByCategories(prods, cats) {
+            let container = document.getElementById('homeCategorySections'); container.innerHTML = '';
+            cats.forEach(cat => {
+                let catProds = prods.filter(p => p.categoryId === cat.id);
+                if(catProds.length > 0) {
+                    let sectionDiv = document.createElement('div');
+                    sectionDiv.innerHTML = `<div class="section-header" style="margin-top: 35px;"><h2 style="border-bottom: 2px solid #e74c3c; padding-bottom: 5px; color: #333; font-size: 18px;">${cat.name}</h2><span class="view-all-btn" onclick="toggleView('category', '${cat.id}')">View All ❯</span></div>`;
+                    let gridDiv = document.createElement('div');
+                    gridDiv.className = 'product-grid';
+                    gridDiv.style.marginBottom = '20px';
+
+                    catProds.forEach(p => {
+                        let imgHtml = p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : (p.imageText || "Img"); let pStr = encodeURIComponent(JSON.stringify(p));
+                        let discountBadge = (p.discount && parseInt(p.discount) > 0) ? `<span class="discount-badge">${p.discount}% OFF</span>` : ``;
+                        let stockBadge = `<span class="stock-badge">Stock: ${p.stock || '10'}</span>`;
+                        
+                        let card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.innerHTML = `${discountBadge}${stockBadge}<div class="product-img">${imgHtml}</div><h4>${p.name}</h4><div class="price">৳ ${p.price} <span class="old-price">৳ ${p.oldPrice}</span></div><button class="btn-buy" onclick="event.stopPropagation(); openProductDetails('${pStr}')">Buy Now</button><button class="btn-cart" onclick="event.stopPropagation(); openProductDetails('${pStr}')">Add to cart</button>`;
+                        card.onclick = () => openProductDetails(pStr);
+                        gridDiv.appendChild(card);
+                    });
+                    sectionDiv.appendChild(gridDiv);
+                    container.appendChild(sectionDiv);
+                }
+            });
+        }
+
+        async function loadRecentOrdersTable() {
+            let orders = await getDB(ORDERS_KEY) || [];
+            let tbody = document.getElementById('recentOrdersTableBody');
+            tbody.innerHTML = "";
+            if(orders.length === 0) {
+                tbody.innerHTML = `<tr><td>Guest</td><td>Adobe Creative Cloud CC (All Apps)</td><td>2026-08-31</td><td><b>800</b></td><td><span class="status-pill-pending">Pending</span></td></tr>`;
+                return;
+            }
+            orders.slice(-5).reverse().forEach(o => {
+                tbody.innerHTML += `<tr><td>${o.fullName || o.userEmail}</td><td>${o.productName}</td><td>${o.date.split('T')[0]}</td><td><b>${o.price}</b></td><td><span class="status-pill-pending">${o.status}</span></td></tr>`;
+            });
+        }
+
+        function calcDisc(prefix) {
+            let p = parseFloat(document.getElementById(prefix + 'Price').value);
+            let op = parseFloat(document.getElementById(prefix + 'OldPrice').value);
+            let dInput = document.getElementById(prefix + 'Discount');
+            if(p && op && op > p) dInput.value = Math.round(((op - p) / op) * 100);
+            else dInput.value = "";
+        }
+
+        async function loadAdminOrders() { let orders = await getDB(ORDERS_KEY) || []; let tbody = document.getElementById('adminOrdersList'); tbody.innerHTML = ""; orders.reverse().forEach(o => { let statusBadge = o.status === "Pending" ? `<span class="badge-pending">Pending</span>` : `<span class="badge-delivered">Delivered</span>`; let actionBtn = o.status === "Pending" ? `<button class="admin-btn-save" style="padding:4px 8px; font-size:12px;" onclick="openDeliveryModal('${o.orderId}')">Deliver</button>` : `<span style="color:#2ecc71; font-weight:bold;">Done ✓</span>`; let customerInfo = `<b>${o.fullName || 'Guest'}</b><br><small>${o.phone || ''}</small><br><small style="color:#7f8c8d;">${o.userEmail}</small>`; let payInfo = `<b>${o.paymentMethod || 'Unknown'}</b><br><small>${o.paymentNumber || ''}</small><br><small style="color:#e74c3c;">TrxID: ${o.trxId || ''}</small>`; tbody.innerHTML += `<tr><td>${o.orderId}</td><td>${customerInfo}</td><td>${o.productName}<br><span style="color:#2ecc71; font-weight:bold;">৳ ${o.price}</span></td><td>${payInfo}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`; }); }
+        function openDeliveryModal(orderId) { document.getElementById('dOrderId').value = orderId; document.getElementById('dDetails').value = ""; openModal('deliveryModal'); }
+        async function submitDelivery() { let orderId = document.getElementById('dOrderId').value; let details = document.getElementById('dDetails').value; if(!details) return alert("Enter delivery details."); let orders = await getDB(ORDERS_KEY) || []; let orderIndex = orders.findIndex(o => o.orderId === orderId); if(orderIndex !== -1) { orders[orderIndex].status = "Delivered"; orders[orderIndex].deliveryDetails = details; await setDB(ORDERS_KEY, orders); closeModal('deliveryModal'); loadAdminOrders(); showSuccess("Delivery Sent!", "User can see details in dashboard."); } loadRecentOrdersTable(); }
+        async function loadUserOrders() { let orders = await getDB(ORDERS_KEY) || []; let tbody = document.getElementById('userOrdersList'); tbody.innerHTML = ""; let userOrders = orders.filter(o => o.userEmail === currentUser).reverse(); if(userOrders.length === 0) return tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No orders yet.</td></tr>`; userOrders.forEach(o => { let statusBadge = o.status === "Pending" ? `<span class="badge-pending">Processing...</span>` : `<span class="badge-delivered">Delivered ✓</span>`; let detailsText = o.status === "Pending" ? "<i style='color:#888;'>Waiting for admin...</i>" : `<textarea readonly rows="2" style="width:100%; border:1px solid #2ecc71; padding:5px; font-weight:bold;">${o.deliveryDetails}</textarea>`; tbody.innerHTML += `<tr style="background: #fff; color:#333;"><td>${o.orderId}<br><small>${o.date}</small></td><td><b>${o.productName}</b></td><td style="color:#2ecc71; font-weight:bold;">৳ ${o.price}</td><td>${statusBadge}</td><td>${detailsText}</td></tr>`; }); }
+
+        function renderAdminCategories(cats) { let html = ""; cats.forEach((c, index) => { html += `<tr><td style="text-align:center;"><div style="width:30px; height:30px; border-radius:50%; background:#eee; display:inline-flex; align-items:center; justify-content:center; overflow:hidden; font-size:10px; font-weight:bold;">${getIconHTML(c)}</div></td><td>${c.name}</td><td><button class="btn-edit" onclick="openCatEditModal(${index})">Edit</button> <button class="btn-delete" onclick="deleteCategory(${index})">Delete</button></td></tr>`; }); document.getElementById('adminCategoryList').innerHTML = html; }
+        function updateCategoryDropdowns(cats) { let html = ""; cats.forEach(c => { html += `<option value="${c.id}">${c.name}</option>`; }); document.getElementById('pCategory').innerHTML = html; document.getElementById('eCategory').innerHTML = html; }
+        async function addCategory() { let name = document.getElementById('catName').value; let file = document.getElementById('catImage').files[0]; if(!name) return alert("Name required"); let newCat = { id: 'c' + Date.now(), name, iconUrl: file ? await compressImage(file, 200) : "" }; let cats = await getDB(CAT_KEY) || []; cats.push(newCat); await setDB(CAT_KEY, cats); reloadData(); }
+        async function deleteCategory(index) { if(confirm("Delete category?")) { let cats = await getDB(CAT_KEY); cats.splice(index, 1); await setDB(CAT_KEY, cats); reloadData(); } }
+        async function openCatEditModal(index) { let cats = await getDB(CAT_KEY); document.getElementById('cIndex').value = index; document.getElementById('cName').value = cats[index].name; openModal('editCatModal'); }
+        async function saveEditCategory() { let index = document.getElementById('cIndex').value; let cats = await getDB(CAT_KEY); cats[index].name = document.getElementById('cName').value; let file = document.getElementById('cImageUpload').files[0]; if(file) cats[index].iconUrl = await compressImage(file, 200); await setDB(CAT_KEY, cats); reloadData(); closeModal('editCatModal'); }
+
+        function renderAdminProducts(prods, cats) { 
+            let html = ""; 
+            prods.forEach((p, index) => { 
+                let catName = cats.find(c => c.id === p.categoryId)?.name || "Unknown"; 
+                let imgHtml = p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%; height:100%; object-fit:contain; padding:2px;">` : "Img"; 
+                let statusText = (p.visibility === 'hide') ? `<span style="color:red; font-weight:bold;">Hidden</span>` : `<span style="color:green; font-weight:bold;">Visible</span>`;
+                html += `<tr><td style="width:40px; text-align:center;"><div style="width:25px; height:25px; border-radius:50%; background:#eee; display:inline-flex; align-items:center; justify-content:center; overflow:hidden; font-size:10px;">${imgHtml}</div></td><td>${p.name}</td><td>${catName}</td><td>৳ ${p.price}</td><td><small>${p.tags || '-'}</small></td><td><b>${p.stock || 10}</b></td><td>${statusText}</td><td><button class="btn-edit" onclick="openProdEditModal(${index})">Edit</button> <button class="btn-delete" onclick="deleteProduct(${index})">Delete</button></td></tr>`; 
+            }); 
+            document.getElementById('adminProductList').innerHTML = html; 
+        }
+
+        async function addProduct() { 
+            let name = document.getElementById('pName').value, catId = document.getElementById('pCategory').value, price = document.getElementById('pPrice').value, oldPrice = document.getElementById('pOldPrice').value, discount = document.getElementById('pDiscount').value || "0", stock = document.getElementById('pStock').value || "10", tags = document.getElementById('pTags').value, desc = document.getElementById('pDesc').value, reviews = document.getElementById('pReviews').value, visibility = document.getElementById('pVisibility').value, file = document.getElementById('pImageUpload').files[0]; 
+            if (!name || !price || !catId) return alert("Required fields missing"); 
+            let newProd = { id: 'p'+Date.now(), name, categoryId: catId, imageText: name.substring(0, 3).toUpperCase(), imageUrl: file ? await compressImage(file, 500) : "", price, oldPrice, discount, stock, tags, description: desc, reviews, visibility }; 
+            let prods = await getDB(PROD_KEY) || []; prods.push(newProd); await setDB(PROD_KEY, prods); reloadData(); alert("Product Added!"); 
+        }
+        async function deleteProduct(index) { if(confirm("Delete product?")) { let prods = await getDB(PROD_KEY); prods.splice(index, 1); await setDB(PROD_KEY, prods); reloadData(); } }
+        
+        async function openProdEditModal(index) { 
+            let prods = await getDB(PROD_KEY); let p = prods[index]; 
+            document.getElementById('eIndex').value = index; 
+            document.getElementById('eName').value = p.name; 
+            document.getElementById('eCategory').value = p.categoryId; 
+            document.getElementById('ePrice').value = p.price; 
+            document.getElementById('eOldPrice').value = p.oldPrice; 
+            document.getElementById('eDiscount').value = p.discount; 
+            document.getElementById('eStock').value = p.stock || "10"; 
+            document.getElementById('eTags').value = p.tags || "";
+            document.getElementById('eDesc').value = p.description || "";
+            document.getElementById('eReviews').value = p.reviews || "";
+            document.getElementById('eVisibility').value = p.visibility || "show"; 
+            openModal('editProductModal'); 
+        }
+
+        async function saveEditProduct() { 
+            let index = document.getElementById('eIndex').value; let prods = await getDB(PROD_KEY); 
+            prods[index].name = document.getElementById('eName').value; 
+            prods[index].categoryId = document.getElementById('eCategory').value; 
+            prods[index].price = document.getElementById('ePrice').value; 
+            prods[index].oldPrice = document.getElementById('eOldPrice').value; 
+            prods[index].discount = document.getElementById('eDiscount').value; 
+            prods[index].stock = document.getElementById('eStock').value; 
+            prods[index].tags = document.getElementById('eTags').value;
+            prods[index].description = document.getElementById('eDesc').value;
+            prods[index].reviews = document.getElementById('eReviews').value;
+            prods[index].visibility = document.getElementById('eVisibility').value; 
+            let file = document.getElementById('eImageUpload').files[0]; 
+            if(file) prods[index].imageUrl = await compressImage(file, 500); 
+            await setDB(PROD_KEY, prods); reloadData(); closeModal('editProductModal'); 
+        }
+
+        async function loadLogo() { let logo = await getDB(LOGO_KEY); document.getElementById('siteLogo').innerHTML = logo ? `<img src="${logo}">` : `<img src="watermarked_img_13549971715171506426.jpg" alt="টপ বাই সেল" style="height: 38px;">`; }
+        async function updateLogo() { let file = document.getElementById('adminLogoInput').files[0]; if(file) { await setDB(LOGO_KEY, await compressImage(file, 400)); loadLogo(); alert("Logo Updated!"); } }
+        async function updateBanners() { let files = document.getElementById('adminBannerInput').files; if(files.length===0) return; let images = []; for (let i = 0; i < files.length; i++) images.push(await compressImage(files[i], 1200)); await setDB(BANNER_KEY, images); renderBanners(); }
+        async function renderBanners() { let banners = await getDB(BANNER_KEY) || customUserBanners; let slider = document.getElementById('mainBannerSlider'); clearInterval(slideInterval); if (banners.length === 0) return; slider.style.border = "none"; slider.innerHTML = ""; banners.forEach((src, i) => { slider.innerHTML += `<div class="banner-slide ${i === 0 ? 'active' : ''}" style="background-image: url('${src}');"></div>`; }); if(banners.length > 1) slideInterval = setInterval(() => { let slides = document.querySelectorAll('.banner-slide'); slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 3000); }
+        function compressImage(file, maxW) { return new Promise(res => { let reader = new FileReader(); reader.readAsDataURL(file); reader.onload = e => { let img = new Image(); img.src = e.target.result; img.onload = () => { let canvas = document.createElement('canvas'); let scale = Math.min(maxW / img.width, 1); canvas.width = img.width * scale; canvas.height = img.height * scale; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.8)); }; }; }); }
+        
+        async function resetAllData() { if(confirm("Factory Reset?")) { await setDB(CAT_KEY, defaultCats); await setDB(PROD_KEY, defaultProds); await setDB(BANNER_KEY, customUserBanners); await setDB(LOGO_KEY, null); await setDB(ORDERS_KEY, []); await setDB(USERS_KEY, []); await setDB(LANDING_KEY, []); await setDB(PAY_SET_KEY, defaultPaySettings); await setDB(NOTICE_KEY, ""); await setDB(VIDEO_KEY, ""); await setDB(VID_CONFIG_KEY, null); await setDB(FOOTER_KEY, null); await setDB(TOPBAR_KEY, null); await setDB(ADS_KEY, null); await setDB(SIDE_WIDGETS_KEY, null); window.location.reload(); } }
+        function openModal(id) { document.getElementById(id).style.display = "flex"; } function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        function showSuccess(title, msg) { document.getElementById('actionTitle').innerText = title; document.getElementById('actionMessage').innerHTML = msg; openModal('actionSuccessModal'); }
+        function startTimer() { let t = (3 * 3600) + (45 * 60) + 30; setInterval(() => { if(t<=0) return; t--; document.getElementById('hours').innerText = Math.floor(t / 3600).toString().padStart(2, '0'); document.getElementById('minutes').innerText = Math.floor((t % 3600) / 60).toString().padStart(2, '0'); document.getElementById('seconds').innerText = (t % 60).toString().padStart(2, '0'); }, 1000); }
+    </script>
+</body>
+</html>
